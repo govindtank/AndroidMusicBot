@@ -2,6 +2,11 @@ dependencies:
   pre:
     - chmod +x gradlew
     
-test:
-  post:
-    - ls app/build/outputs/apk
+#Deploy when tests pass
+deployment:
+    master:
+        branch: master
+        commands:
+            - (./gradlew build -PdisablePreFex):
+                timeout: 720
+            - cp app/build/outputs/apk/app-release-unsigned.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
