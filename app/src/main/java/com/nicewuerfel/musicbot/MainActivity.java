@@ -201,6 +201,14 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
   @Override
   protected void onStart() {
     super.onStart();
+    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    if (preferences.getString("bot_token", null) == null) {
+      Intent intent = new Intent(this, LoginActivity.class);
+      startActivity(intent);
+      return;
+    }
+
     stopped = false;
     if (!isSearching()) {
       refreshPlayerState();
