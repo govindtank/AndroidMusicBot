@@ -89,11 +89,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
           URI oldUri;
           try {
             oldUri = new URI(stringValue);
-            if (oldUri.getScheme() == null || oldUri.getHost() == null) {
+          } catch (URISyntaxException e) {
+            try {
               stringValue = "https://" + stringValue;
               oldUri = new URI(stringValue);
+            } catch (URISyntaxException e1) {
+              return false;
             }
-          } catch (URISyntaxException e) {
+          }
+          if (oldUri.getScheme() == null || oldUri.getHost() == null) {
             try {
               stringValue = "https://" + stringValue;
               oldUri = new URI(stringValue);
