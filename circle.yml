@@ -9,4 +9,4 @@ deployment:
         commands:
             - (./gradlew build -PdisablePreFex):
                 timeout: 720
-            - cp app/build/outputs/apk/app-release-unsigned.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
+            - cp app/build/outputs/apk/app-debug.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
