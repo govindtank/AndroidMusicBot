@@ -1,0 +1,7 @@
+dependencies:
+  pre:
+    - chmod +x gradlew
+    
+test:
+  post:
+    - ls app\build\outputs\apk
