@@ -294,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
         return true;
       case R.id.action_logout:
         logout();
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }

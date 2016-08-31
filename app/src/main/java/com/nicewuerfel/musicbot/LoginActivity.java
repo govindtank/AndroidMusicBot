@@ -30,6 +30,8 @@ import com.nicewuerfel.musicbot.api.User;
 import java.io.IOException;
 import java.util.Objects;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import retrofit2.Response;
 
 /**
@@ -107,7 +109,11 @@ public class LoginActivity extends AppCompatActivity {
   @Override
   protected void onStart() {
     super.onStart();
-    ApiConnector.getService(PreferenceManager.getDefaultSharedPreferences(this), getString(R.string.pref_default_server));
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    if (prefs.getString("bot_token", null) != null) {
+      finish();
+    }
+    ApiConnector.getService(prefs, getString(R.string.pref_default_server));
   }
 
   @Override
@@ -220,7 +226,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
   private enum UserLoginTaskResult {
-    SUCCESS, WRONG_COMBO, USER_EXISTS, ERROR
+    SUCCESS, WRONG_COMBO, USER_EXISTS, SSL_CERT, ERROR
   }
 
   /**
@@ -249,6 +255,8 @@ public class LoginActivity extends AppCompatActivity {
         } else {
           response = ApiConnector.getService().login(user).execute();
         }
+      } catch (SSLHandshakeException e) {
+        return UserLoginTaskResult.SSL_CERT;
       } catch (IOException e) {
         return UserLoginTaskResult.ERROR;
       }
@@ -291,6 +299,9 @@ public class LoginActivity extends AppCompatActivity {
         case WRONG_COMBO:
           mPasswordView.setError(getString(R.string.error_incorrect_password));
           mPasswordView.requestFocus();
+          return;
+        case SSL_CERT:
+          Toast.makeText(LoginActivity.this, getString(R.string.ssl_error), Toast.LENGTH_LONG).show();
           return;
         case ERROR:
         default:
