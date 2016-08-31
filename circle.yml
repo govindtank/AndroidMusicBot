@@ -4,4 +4,4 @@ dependencies:
     
 test:
   post:
-    - ls app\build\outputs\apk
+    - ls app/build/outputs/apk
