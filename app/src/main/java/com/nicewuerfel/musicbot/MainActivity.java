@@ -101,19 +101,20 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
       }
     });
 
+
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    if (preferences.getString("bot_token", null) == null) {
+      Intent intent = new Intent(this, LoginActivity.class);
+      startActivity(intent);
+    }
+
     try {
       ApiConnector.getService(preferences, getString(R.string.pref_default_server));
     } catch (IllegalArgumentException e) {
       Toast.makeText(this, getString(R.string.invalid_url), Toast.LENGTH_LONG).show();
       Intent intent = new Intent(this, SettingsActivity.class);
       startActivity(intent);
-      return;
-    }
-    if (preferences.getString("bot_token", null) == null) {
-      Intent intent = new Intent(this, LoginActivity.class);
-      startActivity(intent);
-      return;
     }
 
     if (this.isSearching()) {
