@@ -2,7 +2,7 @@
     <string name="app_name">MusicBot</string>
     <string name="title_activity_main">MusicBot</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="pref_default_server">http://localhost/</string>
+    <string name="pref_default_server">https://localhost/</string>
     <string name="pref_title_server">MusicBot url</string>
     <string name="action_settings">Settings</string>
     <string name="menu_item_search">Search %s</string>

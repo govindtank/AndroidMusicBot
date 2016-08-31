@@ -90,12 +90,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
           try {
             oldUri = new URI(stringValue);
             if (oldUri.getScheme() == null || oldUri.getHost() == null) {
-              stringValue = "http://" + stringValue;
+              stringValue = "https://" + stringValue;
               oldUri = new URI(stringValue);
             }
           } catch (URISyntaxException e) {
             try {
-              stringValue = "http://" + stringValue;
+              stringValue = "https://" + stringValue;
               oldUri = new URI(stringValue);
             } catch (URISyntaxException e1) {
               return false;
@@ -105,7 +105,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
           int oldPort = oldUri.getPort();
           URI newUri;
           try {
-            newUri = new URI(oldUri.getScheme(), oldUri.getUserInfo(), oldUri.getHost(), oldPort == -1 ? 8000 : oldPort, oldUri.getPath(), null, null);
+            newUri = new URI(oldUri.getScheme(), oldUri.getUserInfo(), oldUri.getHost(), oldPort == -1 ? 8443 : oldPort, oldUri.getPath(), null, null);
           } catch (URISyntaxException e) {
             return false;
           }
