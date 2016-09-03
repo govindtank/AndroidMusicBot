@@ -4,12 +4,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DummyCallback<T> implements Callback<T> {
+public class DummyCallback<T> extends FinishableCallback<T> {
   @Override
-  public void onResponse(Call<T> call, Response<T> response) {
+  public void onCallResponse(Call<T> call, Response<T> response) {
   }
 
   @Override
-  public void onFailure(Call<T> call, Throwable t) {
+  public void onCallFailure(Call<T> call, Throwable t) {
   }
 }

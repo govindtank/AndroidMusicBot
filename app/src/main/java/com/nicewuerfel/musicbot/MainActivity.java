@@ -25,6 +25,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.nicewuerfel.musicbot.api.ApiConnector;
+import com.nicewuerfel.musicbot.api.DummyCallback;
+import com.nicewuerfel.musicbot.api.FinishableCallback;
 import com.nicewuerfel.musicbot.api.MusicApi;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
   private List<MusicApi> apis;
   private Map<Integer, MusicApi> apiIds;
 
+  private FinishableCallback refreshCallback;
   boolean stopped = false;
 
   @Override
@@ -68,38 +71,41 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     setSupportActionBar(toolbar);
     apis = Collections.emptyList();
     apiIds = new ConcurrentHashMap<>();
+    refreshCallback = new DummyCallback();
 
     FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_speed_dial);
-    fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
-      @Override
-      public boolean onPrepareMenu(final NavigationMenu navigationMenu) {
-        navigationMenu.clear();
-        apiIds.clear();
-        if (apis.isEmpty()) {
-          SubMenu menu = navigationMenu.addSubMenu(getString(R.string.no_search_apis));
-          menu.setIcon(android.R.drawable.stat_notify_error);
-        } else {
-          int i = 0;
-          for (MusicApi api : apis) {
-            MenuItem menu = navigationMenu.add(Menu.NONE, i++, Menu.NONE, getString(R.string.menu_item_search, api.getPrettyApiName()));
-            menu.setIcon(android.R.drawable.ic_menu_search);
-            int id = menu.getItemId();
-            apiIds.put(id, api);
+    if (fabSpeedDial != null) {
+      fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
+        @Override
+        public boolean onPrepareMenu(final NavigationMenu navigationMenu) {
+          navigationMenu.clear();
+          apiIds.clear();
+          if (apis.isEmpty()) {
+            SubMenu menu = navigationMenu.addSubMenu(getString(R.string.no_search_apis));
+            menu.setIcon(android.R.drawable.stat_notify_error);
+          } else {
+            int i = 0;
+            for (MusicApi api : apis) {
+              MenuItem menu = navigationMenu.add(Menu.NONE, i++, Menu.NONE, getString(R.string.menu_item_search, api.getPrettyApiName()));
+              menu.setIcon(android.R.drawable.ic_menu_search);
+              int id = menu.getItemId();
+              apiIds.put(id, api);
+            }
           }
+          return true;
         }
-        return true;
-      }
 
-      @Override
-      public boolean onMenuItemSelected(MenuItem menuItem) {
-        int id = menuItem.getItemId();
-        MusicApi api = apiIds.get(id);
-        if (api != null) {
-          showSearchBar(api);
+        @Override
+        public boolean onMenuItemSelected(MenuItem menuItem) {
+          int id = menuItem.getItemId();
+          MusicApi api = apiIds.get(id);
+          if (api != null) {
+            showSearchBar(api);
+          }
+          return true;
         }
-        return true;
-      }
-    });
+      });
+    }
 
 
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -124,7 +130,9 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
         actionBar.setDisplayHomeAsUpEnabled(true);
       }
 
-      fabSpeedDial.setVisibility(View.GONE);
+      if (fabSpeedDial != null) {
+        fabSpeedDial.setVisibility(View.GONE);
+      }
 
       Intent intent = getIntent();
       String query = intent.getStringExtra(SearchManager.QUERY);
@@ -164,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     playerState = null;
     playerControlFragment = null;
     queueFragment = null;
+    refreshCallback = new DummyCallback();
   }
 
   @Override
@@ -187,14 +196,16 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
   }
 
   private void refreshSearchResults(String query) {
+    refreshCallback = new SearchResultCallback();
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.activity_main_content, LoadingFragment.newInstance())
         .commit();
-    ApiConnector.getService().searchSong(SongContentProvider.getApi().getApiName(), query).enqueue(new SearchResultCallback(this));
+    ApiConnector.getService().searchSong(SongContentProvider.getApi().getApiName(), query).enqueue(refreshCallback);
   }
 
   void refreshPlayerState() {
-    ApiConnector.getService().getPlayerState().enqueue(new GetPlayerStateCallback());
+    refreshCallback = new GetPlayerStateCallback();
+    ApiConnector.getService().getPlayerState().enqueue(refreshCallback);
     ApiConnector.getService().getMusicApis().enqueue(new GetMusicApisCallback());
   }
 
@@ -301,6 +312,9 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
   }
 
   private void onRefreshClick() {
+    if (isRefreshing()) {
+      return;
+    }
     Intent intent = getIntent();
     if (this.isSearching()) {
       String query = intent.getStringExtra(SearchManager.QUERY);
@@ -316,6 +330,10 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
 
   public boolean isStopped() {
     return stopped;
+  }
+
+  public boolean isRefreshing() {
+    return !refreshCallback.isFinished();
   }
 
   void logout() {
@@ -350,10 +368,10 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     });
   }
 
-  private class GetPlayerStateCallback implements Callback<PlayerState> {
+  private class GetPlayerStateCallback extends FinishableCallback<PlayerState> {
 
     @Override
-    public void onResponse(Call<PlayerState> call, Response<PlayerState> response) {
+    public void onCallResponse(Call<PlayerState> call, Response<PlayerState> response) {
       if (isStopped()) {
         return;
       }
@@ -373,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     }
 
     @Override
-    public void onFailure(Call<PlayerState> call, Throwable t) {
+    public void onCallFailure(Call<PlayerState> call, Throwable t) {
       if (isStopped()) {
         return;
       }
@@ -402,20 +420,12 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     public void onFailure(Call<List<MusicApi>> call, Throwable t) {
     }
   }
-}
 
-class SearchResultCallback implements Callback<List<Song>> {
-  private final WeakReference<MainActivity> activity;
+  class SearchResultCallback extends FinishableCallback<List<Song>> {
 
-  SearchResultCallback(MainActivity activity) {
-    this.activity = new WeakReference<>(activity);
-  }
-
-  @Override
-  public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
-    MainActivity activity = this.activity.get();
-    if (activity != null) {
-      if (activity.isStopped()) {
+    @Override
+    public void onCallResponse(Call<List<Song>> call, Response<List<Song>> response) {
+      if (isStopped()) {
         return;
       }
       List<Song> songs = response.body();
@@ -426,23 +436,19 @@ class SearchResultCallback implements Callback<List<Song>> {
         songsArrayList = new ArrayList<>(songs);
       }
       Fragment fragment = SearchSongFragment.newInstance(songsArrayList);
-      activity.getSupportFragmentManager().beginTransaction()
+      getSupportFragmentManager().beginTransaction()
           .replace(R.id.activity_main_content, fragment)
-          .commitAllowingStateLoss();
+          .commit();
     }
 
-  }
-
-  @Override
-  public void onFailure(Call<List<Song>> call, Throwable t) {
-    MainActivity activity = this.activity.get();
-    if (activity != null) {
-      if (activity.isStopped()) {
+    @Override
+    public void onCallFailure(Call<List<Song>> call, Throwable t) {
+      if (isStopped()) {
         return;
       }
-      activity.getSupportFragmentManager().beginTransaction()
+      getSupportFragmentManager().beginTransaction()
           .replace(R.id.activity_main_content, ConnectionErrorFragment.newInstance())
-          .commitAllowingStateLoss();
+          .commit();
     }
   }
 }
