@@ -40,6 +40,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
@@ -207,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
     refreshCallback = new GetPlayerStateCallback();
     ApiConnector.getService().getPlayerState().enqueue(refreshCallback);
     ApiConnector.getService().getMusicApis().enqueue(new GetMusicApisCallback());
+    ApiConnector.updateHasAdmin(null);
   }
 
   @Override
@@ -286,6 +289,19 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
       }
     });
 
+    final MenuItem claimAdminItem = menu.findItem(R.id.claim_admin_rights);
+    final MenuItem adminPanelItem = menu.findItem(R.id.show_admin_panel);
+
+    ApiConnector.ADMIN_STATE_OBSERVABLE.deleteObservers();
+    ApiConnector.ADMIN_STATE_OBSERVABLE.addObserver(new Observer() {
+      @Override
+      public void update(Observable observable, Object data) {
+        claimAdminItem.setVisible(!ApiConnector.hasAdmin());
+        adminPanelItem.setVisible(ApiConnector.isAdmin());
+      }
+    });
+    ApiConnector.ADMIN_STATE_OBSERVABLE.notifyObservers();
+
     return true;
   }
 
@@ -306,9 +322,39 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
       case R.id.action_logout:
         logout();
         return true;
+      case R.id.claim_admin_rights:
+        claimAdminRights();
+        return true;
+      case R.id.show_admin_panel:
+        // Show admin panel
+        Toast.makeText(this, "NOT IMPLEMENTED", Toast.LENGTH_SHORT).show(); // TODO replace with activity call
       default:
         return super.onOptionsItemSelected(item);
     }
+  }
+
+  private void claimAdminRights() {
+    ApiConnector.getService().claimAdmin().enqueue(new Callback<String>() {
+      @Override
+      public void onResponse(Call<String> call, Response<String> response) {
+        if (response.isSuccessful()) {
+          PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit()
+              .putString("bot_token", response.body())
+              .apply();
+          ApiConnector.getService();
+          ApiConnector.updateIsAdmin(Boolean.TRUE);
+          Toast.makeText(MainActivity.this, getString(R.string.claim_admin_success), Toast.LENGTH_SHORT).show();
+        } else {
+          Toast.makeText(MainActivity.this, getString(R.string.claim_admin_not_allowed) + " " + response.code(), Toast.LENGTH_SHORT).show();
+          ApiConnector.updateHasAdmin(null);
+        }
+      }
+
+      @Override
+      public void onFailure(Call<String> call, Throwable t) {
+        Toast.makeText(MainActivity.this, getString(R.string.connection_failed), Toast.LENGTH_SHORT).show();
+      }
+    });
   }
 
   private void onRefreshClick() {

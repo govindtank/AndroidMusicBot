@@ -81,6 +81,7 @@ public interface BotService {
 
   /**
    * Removes a song from the queue.
+   * Needs admin, mod or queue_remove permission.
    *
    * @param song the song to remove
    * @return an undefined string response
@@ -113,4 +114,90 @@ public interface BotService {
    */
   @PUT("move")
   Call<PlayerState> moveSong(@Body MoveRequestBody moveRequestBody, @Nullable @Query("after_other") Object after);
+
+  /**
+   * Checks whether there is an admin registered on the server.
+   *
+   * @return whether there is the admin
+   */
+  @GET("has_admin")
+  Call<Boolean> hasAdmin();
+
+  /**
+   * Checks whether this user is admin.
+   *
+   * @return whether this user is the admin
+   */
+  @GET("is_admin")
+  Call<Boolean> isAdmin();
+
+  /**
+   * Checks whether this user has one of the given permissions.
+   *
+   * @param neededPermissions the permissions to check for
+   * @return whether the users permissions aren't disjoint with the given permissions
+   */
+  @GET("has_permission")
+  Call<Boolean> hasPermission(@Body List<String> neededPermissions);
+
+  /**
+   * Returns the own permissions.
+   *
+   * @return a list of permissions
+   */
+  @GET("get_permissions")
+  Call<List<String>> getPermissions();
+
+  /**
+   * Claim admin rights on the server.
+   * There can only be one admin.
+   * Fails if this user is already admin.
+   *
+   * @return an admin token
+   */
+  @GET("claim_admin")
+  Call<String> claimAdmin();
+
+  /**
+   * Returns a list of available permissions a user can be granted.
+   * Needs admin permission.
+   *
+   * @return a list of Permission objects.
+   */
+  @GET("get_available_permissions")
+  Call<List<Permission>> getAvailablePermissions();
+
+  /**
+   * Returns a list of users of the API.
+   * Needs admin permission.
+   *
+   * @return a list of ApiUser objects.
+   */
+  @GET("get_users")
+  Call<List<ApiUser>> getUsers();
+
+
+  /**
+   * Grants a permission to a user.
+   * Needs admin permission.
+   * Takes effect after user logs out and in again.
+   *
+   * @param username   the users username
+   * @param permission the permission to grant
+   * @return 'OK' on success
+   */
+  @PUT("grant_permission")
+  Call<String> grantPermission(String username, Permission permission);
+
+  /**
+   * Revokes a permission from a user.
+   * Needs admin permission.
+   * Takes effect after user logs out and in again.
+   *
+   * @param username   the users username
+   * @param permission the permission to revoke
+   * @return 'OK' on success
+   */
+  @PUT("revoke_permission")
+  Call<String> revokePermission(String username, Permission permission);
 }

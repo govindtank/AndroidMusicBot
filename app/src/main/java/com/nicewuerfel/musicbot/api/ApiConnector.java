@@ -21,6 +21,8 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -33,6 +35,14 @@ public class ApiConnector {
   private static BotService service;
   private static String token = null;
   private static boolean trustEveryone = false;
+
+  /**
+   * Register observer to get notified of changes to isAdmin or hasAdmin
+   */
+  public static final Observable ADMIN_STATE_OBSERVABLE = new Observable();
+
+  private static Boolean isAdmin = null;
+  private static Boolean hasAdmin = null;
 
   static {
     builder = new Retrofit.Builder().addConverterFactory(GsonConverterFactory.create());
@@ -111,6 +121,9 @@ public class ApiConnector {
       if (!token.equals(ApiConnector.token)) {
         ApiConnector.token = token;
         updatedPreference = true;
+        isAdmin = null;
+        hasAdmin = null;
+        ADMIN_STATE_OBSERVABLE.notifyObservers();
       }
     }
 
@@ -143,6 +156,70 @@ public class ApiConnector {
     ApiConnector.defaultUrl = Objects.requireNonNull(defaultUrl);
     updateAuth();
     return getService();
+  }
+
+  public static void updateIsAdmin(Boolean isAdmin) {
+    ApiConnector.isAdmin = isAdmin;
+    ADMIN_STATE_OBSERVABLE.notifyObservers();
+  }
+
+  public static void updateHasAdmin(Boolean hasAdmin) {
+    ApiConnector.hasAdmin = hasAdmin;
+    ADMIN_STATE_OBSERVABLE.notifyObservers();
+  }
+
+  /**
+   * Whether this user is admin.
+   * If the value is not known, a callback will be enqueued to retrieve it and the default value is returned.
+   *
+   * @return True, if this user is an admin. Defaults to False.
+   */
+  public static boolean isAdmin() {
+    if (isAdmin == null) {
+      getService().isAdmin().enqueue(new Callback<Boolean>() {
+        @Override
+        public void onResponse(Call<Boolean> call, retrofit2.Response<Boolean> response) {
+          if (response.isSuccessful()) {
+            isAdmin = response.body();
+            ADMIN_STATE_OBSERVABLE.notifyObservers();
+          }
+        }
+
+        @Override
+        public void onFailure(Call<Boolean> call, Throwable t) {
+        }
+      });
+    }
+    // Returns false for null and Boolean.FALSE
+    return isAdmin == Boolean.TRUE;
+  }
+
+  /**
+   * Whether there is an admin on the server.
+   * If not, {@link BotService#claimAdmin()} is possible.
+   * <p/>
+   * If the value is not known, a callback will be enqueued to retrieve it and the default value is returned.
+   *
+   * @return True, if there is and admin. Defaults to True.
+   */
+  public static boolean hasAdmin() {
+    if (hasAdmin == null) {
+      getService().hasAdmin().enqueue(new Callback<Boolean>() {
+        @Override
+        public void onResponse(Call<Boolean> call, retrofit2.Response<Boolean> response) {
+          if (response.isSuccessful()) {
+            hasAdmin = response.body();
+            ADMIN_STATE_OBSERVABLE.notifyObservers();
+          }
+        }
+
+        @Override
+        public void onFailure(Call<Boolean> call, Throwable t) {
+        }
+      });
+    }
+    // Returns true for null or Boolean.TRUE
+    return hasAdmin != Boolean.FALSE;
   }
 }
 

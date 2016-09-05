@@ -34,6 +34,10 @@
     <string name="trust_every_cert">Trust every SSL certificate</string>
     <string name="no_search_apis">No search APIs available. Reload to fix this.</string>
     <string name="ssl_error">SSL handshake error. Consider cheking the trust everyone setting.</string>
+    <string name="claim_admin">Claim admin rights</string>
+    <string name="show_admin_panel">Admin Panel</string>
+    <string name="claim_admin_not_allowed">Not allowed.</string>
+    <string name="claim_admin_success">You are admin now</string>
 
     <!-- Strings related to Settings -->
 
