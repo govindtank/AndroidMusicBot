@@ -38,6 +38,9 @@
     <string name="show_admin_panel">Admin Panel</string>
     <string name="claim_admin_not_allowed">Not allowed.</string>
     <string name="claim_admin_success">You are admin now</string>
+    <string name="admin_action_exit">Shutdown bot</string>
+    <string name="admin_action_reset">Reset bot</string>
+    <string name="activity_admin_title">Admin Panel</string>
 
     <!-- Strings related to Settings -->
 

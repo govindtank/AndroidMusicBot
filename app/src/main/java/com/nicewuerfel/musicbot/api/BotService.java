@@ -200,4 +200,10 @@ public interface BotService {
    */
   @PUT("revoke_permission")
   Call<String> revokePermission(String username, Permission permission);
+
+  @PUT("exit_bot")
+  Call<String> exitBot();
+
+  @PUT("reset_bot")
+  Call<String> resetBot();
 }

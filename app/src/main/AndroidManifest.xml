@@ -47,6 +47,10 @@
             android:authorities="com.nicewuerfel.musicbot.api.song_content_provider"
             android:syncable="false"/>
 
+        <activity
+            android:name=".AdminActivity"
+            android:label="@string/activity_admin_title">
+        </activity>
     </application>
 
 </manifest>

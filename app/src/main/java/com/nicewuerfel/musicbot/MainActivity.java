@@ -326,8 +326,9 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
         claimAdminRights();
         return true;
       case R.id.show_admin_panel:
-        // Show admin panel
-        Toast.makeText(this, "NOT IMPLEMENTED", Toast.LENGTH_SHORT).show(); // TODO replace with activity call
+        Intent adminIntent = new Intent(this, AdminActivity.class);
+        startActivity(adminIntent);
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
