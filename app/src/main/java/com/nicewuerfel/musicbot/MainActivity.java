@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
         Cursor cursor = adapter.getCursor();
         int id = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
         Song song = SongContentProvider.songs.get(id);
-        ApiConnector.getService().queue(song).enqueue(new QueueSongCallback(MainActivity.this));
+        ApiConnector.getService().queue(song).enqueue(new QueueSongCallback());
         menuItem.setVisible(false);
         searchView.setQuery("", false);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -391,13 +391,13 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
 
   @Override
   public void onSearchResultClick(Song song) {
-    ApiConnector.getService().queue(song).enqueue(new QueueSongCallback(this));
+    ApiConnector.getService().queue(song).enqueue(new QueueSongCallback());
     onBackPressed();
   }
 
   @Override
   public void onRemoveSongClick(Song song) {
-    ApiConnector.getService().dequeue(song).enqueue(new QueueSongCallback(this));
+    ApiConnector.getService().dequeue(song).enqueue(new QueueSongCallback());
   }
 
   @Override
@@ -498,36 +498,29 @@ public class MainActivity extends AppCompatActivity implements SearchSongFragmen
           .commit();
     }
   }
-}
 
-class QueueSongCallback implements Callback<String> {
-  private final WeakReference<MainActivity> activity;
 
-  QueueSongCallback(MainActivity activity) {
-    this.activity = new WeakReference<>(activity);
-  }
+  class QueueSongCallback implements Callback<String> {
 
-  @Override
-  public void onResponse(Call<String> call, Response<String> response) {
-    MainActivity activity = this.activity.get();
-    if (activity != null) {
-      if (!activity.isDestroyed()) {
-        if (response.isSuccessful()) {
-          activity.refreshPlayerState();
-        } else if (response.code() == 401) {
-          activity.logout();
-        }
+    @Override
+    public void onResponse(Call<String> call, Response<String> response) {
+      if (isStopped()) {
+        return;
+      }
+      if (response.isSuccessful()) {
+        refreshPlayerState();
+      } else if (response.code() == 401) {
+        logout();
       }
     }
-  }
 
-  @Override
-  public void onFailure(Call<String> call, Throwable t) {
-    MainActivity activity = this.activity.get();
-    if (activity != null) {
-      if (!activity.isDestroyed()) {
-        Toast.makeText(activity, activity.getString(R.string.queue_failed), Toast.LENGTH_SHORT).show();
+
+    @Override
+    public void onFailure(Call<String> call, Throwable t) {
+      if (isStopped()) {
+        return;
       }
+      Toast.makeText(MainActivity.this, getString(R.string.queue_failed), Toast.LENGTH_SHORT).show();
     }
   }
 }

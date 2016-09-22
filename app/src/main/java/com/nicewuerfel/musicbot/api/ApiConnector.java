@@ -152,8 +152,14 @@ public class ApiConnector {
    * @return a BotService instance
    */
   public static BotService getService(SharedPreferences sharedPreferences, String defaultUrl) {
-    ApiConnector.preferences = Objects.requireNonNull(sharedPreferences);
-    ApiConnector.defaultUrl = Objects.requireNonNull(defaultUrl);
+    if (sharedPreferences == null) {
+      throw new NullPointerException("preferences are null");
+    }
+    if (defaultUrl == null) {
+      throw new NullPointerException("default URL is null");
+    }
+    ApiConnector.preferences = sharedPreferences;
+    ApiConnector.defaultUrl = defaultUrl;
     updateAuth();
     return getService();
   }

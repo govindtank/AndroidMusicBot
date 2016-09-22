@@ -247,7 +247,10 @@ public class LoginActivity extends AppCompatActivity {
       if (params.length != 1) {
         return UserLoginTaskResult.ERROR;
       }
-      Boolean register = Objects.requireNonNull(params[0]);
+      if (params[0] == null) {
+        throw new NullPointerException("required params not given");
+      }
+      Boolean register = params[0];
 
       try {
         if (register) {
