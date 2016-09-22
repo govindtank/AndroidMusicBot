@@ -7,7 +7,7 @@
               tools:context="com.nicewuerfel.musicbot.PlayerControlFragment">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
@@ -71,7 +71,7 @@
                 android:layout_gravity="right"
                 android:layout_weight="1"
                 android:background="#000000ff"
-                android:src="@android:drawable/ic_media_pause"/>
+                android:src="@drawable/ic_action_playback_pause"/>
 
             <ImageButton
                 android:id="@+id/next_button"
@@ -80,7 +80,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="1"
                 android:background="#000000ff"
-                android:src="@android:drawable/ic_media_next"/>
+                android:src="@drawable/ic_action_playback_next"/>
         </LinearLayout>
     </LinearLayout>
 

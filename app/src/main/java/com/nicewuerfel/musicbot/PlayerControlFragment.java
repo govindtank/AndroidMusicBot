@@ -156,9 +156,9 @@ public class PlayerControlFragment extends Fragment {
 
     final int drawableResource;
     if (state.isPaused()) {
-      drawableResource = android.R.drawable.ic_media_play;
+      drawableResource = R.drawable.ic_action_playback_play;
     } else {
-      drawableResource = android.R.drawable.ic_media_pause;
+      drawableResource = R.drawable.ic_action_playback_pause;
     }
 
     if (pauseButton != null && songTitleText != null && songDescriptionText != null && songDurationText != null) {
