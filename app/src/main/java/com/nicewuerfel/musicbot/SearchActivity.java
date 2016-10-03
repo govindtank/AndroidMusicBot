@@ -206,11 +206,13 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
   private void refreshSearchResults() {
     if (searchCall != null) {
       searchCall.cancel();
+      searchCall = null;
     }
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.activity_content, LoadingFragment.newInstance())
         .commit();
     getSupportFragmentManager().executePendingTransactions();
+    String query = this.query;
     if (query.isEmpty()) {
       if (api.isSongProvider()) {
         searchCall = ApiConnector.getService().getSuggestions(api.getName());
@@ -222,7 +224,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
       searchCall = ApiConnector.getService().searchSong(api.getName(), query);
     }
     if (searchCall != null) {
-      searchCall.enqueue(new SearchResultCallback());
+      searchCall.enqueue(new SearchResultCallback(query));
     }
   }
 
@@ -256,7 +258,13 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     songFragment.updateQueue(songs);
   }
 
-  class SearchResultCallback implements Callback<List<Song>> {
+  private class SearchResultCallback implements Callback<List<Song>> {
+
+    private final String query;
+
+    private SearchResultCallback(String query) {
+      this.query = query;
+    }
 
     @Override
     public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
@@ -264,7 +272,9 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
       if (songs == null) {
         songs = Collections.emptyList();
       }
-      onSongsUpdate(songs);
+      if (SearchActivity.this.query.equals(query)) {
+        onSongsUpdate(songs);
+      }
       searchCall = null;
     }
 
