@@ -1,7 +1,7 @@
 package com.nicewuerfel.musicbot.api;
 
 
-public class MoveRequestBody {
+public final class MoveRequestBody {
 
   private final Song moving_song_json;
   private final Song other_song_json;

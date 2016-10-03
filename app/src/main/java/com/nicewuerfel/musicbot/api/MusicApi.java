@@ -3,7 +3,7 @@ package com.nicewuerfel.musicbot.api;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class MusicApi implements Parcelable {
+public final class MusicApi implements Parcelable {
 
   private String api_name;
   private String api_pretty_name;
@@ -27,11 +27,11 @@ public class MusicApi implements Parcelable {
     }
   };
 
-  public String getApiName() {
+  public String getName() {
     return api_name;
   }
 
-  public String getPrettyApiName() {
+  public String getPrettyName() {
     return api_pretty_name;
   }
 
@@ -49,5 +49,30 @@ public class MusicApi implements Parcelable {
     parcel.writeString(api_name);
     parcel.writeString(api_pretty_name);
     parcel.writeByte((byte) (is_song_provider ? 1 : 0));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    MusicApi musicApi = (MusicApi) o;
+
+    return api_name.equals(musicApi.api_name);
+
+  }
+
+  @Override
+  public int hashCode() {
+    return api_name.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "MusicApi{" +
+        "api_name='" + api_name + '\'' +
+        ", api_pretty_name='" + api_pretty_name + '\'' +
+        ", is_song_provider=" + is_song_provider +
+        '}';
   }
 }

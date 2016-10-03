@@ -2,16 +2,36 @@ package com.nicewuerfel.musicbot.api;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
-public class PlayerState implements Parcelable {
+public final class PlayerState implements Parcelable {
 
-  private Song current_song;
-  private List<Song> last_played;
-  private List<Song> queue;
-  private boolean paused;
+  public static final PlayerState EMPTY = new PlayerState(null, Collections.<Song>emptyList(), Collections.<Song>emptyList(), false);
+
+  @Nullable
+  private final Song current_song;
+  @NonNull
+  private final List<Song> last_played;
+  @NonNull
+  private final List<Song> queue;
+  private final boolean paused;
+
+  private PlayerState(@Nullable Song current_song, @NonNull List<Song> last_played, @NonNull List<Song> queue, boolean paused) {
+    this.current_song = current_song;
+    if (last_played == null) {
+      throw new NullPointerException("last_played is null");
+    }
+    this.last_played = last_played;
+    if (queue == null) {
+      throw new NullPointerException("queue is null");
+    }
+    this.queue = queue;
+    this.paused = paused;
+  }
 
   protected PlayerState(Parcel in) {
     current_song = in.readParcelable(Song.class.getClassLoader());
@@ -37,10 +57,12 @@ public class PlayerState implements Parcelable {
     return current_song;
   }
 
+  @NonNull
   public List<Song> getLastPlayed() {
     return last_played;
   }
 
+  @NonNull
   public List<Song> getQueue() {
     return queue;
   }
@@ -60,5 +82,38 @@ public class PlayerState implements Parcelable {
     parcel.writeTypedList(last_played);
     parcel.writeTypedList(queue);
     parcel.writeByte((byte) (paused ? 1 : 0));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    PlayerState that = (PlayerState) o;
+
+    if (paused != that.paused) return false;
+    if (current_song != null ? !current_song.equals(that.current_song) : that.current_song != null)
+      return false;
+    if (!last_played.equals(that.last_played)) return false;
+    return queue.equals(that.queue);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = current_song != null ? current_song.hashCode() : 0;
+    result = 31 * result + last_played.hashCode();
+    result = 31 * result + queue.hashCode();
+    result = 31 * result + (paused ? 1 : 0);
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return "PlayerState{" +
+        "current_song=" + current_song +
+        ", last_played=" + last_played +
+        ", queue=" + queue +
+        ", paused=" + paused +
+        '}';
   }
 }

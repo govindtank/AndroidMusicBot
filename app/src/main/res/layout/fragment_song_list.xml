@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView
+<com.mobeta.android.dslv.DragSortListView
     android:id="@+id/list"
     android:name="com.nicewuerfel.musicbot.SongFragment"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -7,8 +7,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="4dp"
-    android:layout_marginRight="4dp"
+    android:divider="#000000ff"
+    app:drag_handle_id="@id/drag_handle"
+    app:float_alpha="0.6"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".SearchSongFragment"
-    tools:listitem="@layout/fragment_search_song"/>
+    tools:context="com.nicewuerfel.musicbot.SongFragment"
+    tools:listitem="@layout/fragment_song"/>

@@ -1,16 +1,15 @@
 package com.nicewuerfel.musicbot.api;
 
-public class Observable extends java.util.Observable {
+/**
+ * An Observable subclass which always returns true for hasChanged.
+ */
+public final class Observable extends java.util.Observable {
 
+  /**
+   * @return true
+   */
   @Override
-  public void notifyObservers() {
-    setChanged();
-    super.notifyObservers();
-  }
-
-  @Override
-  public void notifyObservers(Object data) {
-    setChanged();
-    super.notifyObservers(data);
+  public boolean hasChanged() {
+    return true;
   }
 }

@@ -1,6 +1,6 @@
 package com.nicewuerfel.musicbot.api;
 
-public class User {
+public final class User {
 
   private final String username;
   private final String password;

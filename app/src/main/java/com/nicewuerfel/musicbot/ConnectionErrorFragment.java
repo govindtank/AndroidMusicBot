@@ -2,10 +2,14 @@ package com.nicewuerfel.musicbot;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import retrofit2.Call;
+import retrofit2.Callback;
 
 
 /**
@@ -25,8 +29,18 @@ public class ConnectionErrorFragment extends Fragment {
    *
    * @return A new instance of fragment ConnectionErrorFragment.
    */
+  @NonNull
   public static ConnectionErrorFragment newInstance() {
     return new ConnectionErrorFragment();
+  }
+
+  @NonNull
+  public static ConnectionErrorFragment newInstance(Call<?> call, Callback<?> callback) {
+    ConnectionErrorFragment fragment = new ConnectionErrorFragment();
+    Bundle args = new Bundle();
+    //args.putParcelableArrayList(ARG_SONG_LIST, songs);
+    fragment.setArguments(args);
+    return fragment;
   }
 
   @Override

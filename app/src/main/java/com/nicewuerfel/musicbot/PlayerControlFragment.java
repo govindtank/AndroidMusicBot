@@ -3,7 +3,6 @@ package com.nicewuerfel.musicbot;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +11,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.nicewuerfel.musicbot.api.ApiConnector;
+import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 
 import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,10 +33,9 @@ import retrofit2.Response;
  */
 public class PlayerControlFragment extends Fragment {
 
-  private static final String ARG_PLAYER_STATE = "PLAYER_STATE";
-
   private OnListFragmentInteractionListener mListener;
   private ScheduledExecutorService executor;
+  private Observer playerStateObserver;
 
   private ImageButton pauseButton;
   private TextView songTitleText;
@@ -51,22 +52,30 @@ public class PlayerControlFragment extends Fragment {
    *
    * @return A new instance of fragment PlayerControlFragment.
    */
-  public static PlayerControlFragment newInstance(@Nullable PlayerState state) {
-    PlayerControlFragment fragment = new PlayerControlFragment();
-    if (state != null) {
-      Bundle args = new Bundle();
-      args.putParcelable(ARG_PLAYER_STATE, state);
-      fragment.setArguments(args);
+  public static PlayerControlFragment newInstance() {
+    return new PlayerControlFragment();
+  }
+
+  @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    if (context instanceof OnListFragmentInteractionListener) {
+      mListener = (OnListFragmentInteractionListener) context;
+    } else {
+      throw new RuntimeException(context.toString()
+          + " must implement OnListFragmentInteractionListener");
     }
-    return fragment;
   }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    if (getArguments() != null) {
-      onPlayerStateUpdate(getArguments().<PlayerState>getParcelable(ARG_PLAYER_STATE));
-    }
+    playerStateObserver = new Observer() {
+      @Override
+      public void update(Observable observable, Object data) {
+        onPlayerStateUpdate((PlayerState) data);
+      }
+    };
   }
 
   @Override
@@ -99,6 +108,20 @@ public class PlayerControlFragment extends Fragment {
     songDescriptionText.setText("");
     songDurationText.setText("");
 
+    return view;
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    BotState.getInstance().addPlayerStateObserver(playerStateObserver);
+    executor = Executors.newSingleThreadScheduledExecutor();
+    onPlayerStateUpdate(BotState.getInstance().getPlayerState());
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
     executor.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
@@ -107,46 +130,47 @@ public class PlayerControlFragment extends Fragment {
           if (response.isSuccessful()) {
             PlayerState state = response.body();
             if (state != null) {
-              onPlayerStateUpdate(state);
+              BotState.getInstance().setPlayerState(state);
             }
           }
         } catch (IOException e) {
         }
       }
     }, 0L, 5L, TimeUnit.SECONDS);
-
-    return view;
   }
 
   @Override
-  public void onAttach(Context context) {
-    super.onAttach(context);
-    if (context instanceof OnListFragmentInteractionListener) {
-      mListener = (OnListFragmentInteractionListener) context;
-      executor = Executors.newSingleThreadScheduledExecutor();
-    } else {
-      throw new RuntimeException(context.toString()
-          + " must implement OnListFragmentInteractionListener");
-    }
+  public void onPause() {
+    super.onPause();
+  }
+
+  @Override
+  public void onStop() {
+    BotState.getInstance().deletePlayerStateObserver(playerStateObserver);
+    executor.shutdownNow();
+    executor = null;
+    super.onStop();
+  }
+
+  @Override
+  public void onDestroy() {
+    playerStateObserver = null;
+    super.onDestroy();
   }
 
   @Override
   public void onDestroyView() {
-    super.onDestroyView();
-    if (executor != null) {
-      executor.shutdownNow();
-    }
     pauseButton = null;
     songTitleText = null;
     songDescriptionText = null;
     songDurationText = null;
+    super.onDestroyView();
   }
 
   @Override
   public void onDetach() {
-    super.onDetach();
     mListener = null;
-    executor = null;
+    super.onDetach();
   }
 
   public void onPlayerStateUpdate(final PlayerState state) {
@@ -162,52 +186,36 @@ public class PlayerControlFragment extends Fragment {
     }
 
     if (pauseButton != null && songTitleText != null && songDescriptionText != null && songDurationText != null) {
-      pauseButton.post(new Runnable() {
-        @Override
-        public void run() {
-          if (pauseButton != null && songTitleText != null && songDescriptionText != null && songDurationText != null) {
-            pauseButton.setImageResource(drawableResource);
-            Song song = state.getCurrentSong();
-            if (song != null) {
-              if (!songTitleText.getText().equals(song.getTitle())) {
-                songTitleText.setText(song.getTitle());
-              }
-              if (!songDescriptionText.getText().equals(song.getDescription())) {
-                songDescriptionText.setText(song.getDescription());
-              }
-              songDurationText.setText(song.getDuration());
-            }
-          }
+      pauseButton.setImageResource(drawableResource);
+      Song song = state.getCurrentSong();
+      if (song != null) {
+        if (!songTitleText.getText().equals(song.getTitle())) {
+          songTitleText.setText(song.getTitle());
         }
-      });
-    }
-
-    if (mListener != null) {
-      mListener.onPlayerStateUpdate(state);
+        if (!songDescriptionText.getText().equals(song.getDescription())) {
+          songDescriptionText.setText(song.getDescription());
+        }
+        songDurationText.setText(song.getDuration());
+      }
     }
   }
 
   public interface OnListFragmentInteractionListener {
-    void onPlayerStateUpdate(PlayerState state);
   }
 
   private class PlayerControlCallback implements retrofit2.Callback<PlayerState> {
-
     @Override
     public void onResponse(Call<PlayerState> call, Response<PlayerState> response) {
       if (response.isSuccessful()) {
         PlayerState state = response.body();
-        if (state == null) {
-          return;
+        if (state != null) {
+          BotState.getInstance().setPlayerState(state);
         }
-
-        onPlayerStateUpdate(state);
       }
     }
 
     @Override
     public void onFailure(Call<PlayerState> call, Throwable t) {
-      // TODO handle failure
     }
   }
 }

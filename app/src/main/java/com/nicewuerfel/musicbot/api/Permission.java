@@ -3,7 +3,7 @@ package com.nicewuerfel.musicbot.api;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Permission implements Parcelable {
+public final class Permission implements Parcelable {
   private final String name;
   private final String description;
 

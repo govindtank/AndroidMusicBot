@@ -2,13 +2,14 @@ package com.nicewuerfel.musicbot.api;
 
 
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Objects;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -17,36 +18,35 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import id.ridsatrio.optio.Optional;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ApiConnector {
+public final class ApiConnector {
 
   private static final Retrofit.Builder builder;
   private static SharedPreferences preferences;
   private static String defaultUrl;
   private static String currentUrl;
   private static BotService service;
-  private static String token = null;
   private static boolean trustEveryone = false;
-
-  /**
-   * Register observer to get notified of changes to isAdmin or hasAdmin
-   */
-  public static final Observable ADMIN_STATE_OBSERVABLE = new Observable();
-
-  private static Boolean isAdmin = null;
-  private static Boolean hasAdmin = null;
 
   static {
     builder = new Retrofit.Builder().addConverterFactory(GsonConverterFactory.create());
     updateAuth();
+  }
+
+  @Nullable
+  private static String getToken() {
+    if (preferences == null) {
+      return null;
+    }
+
+    return preferences.getString("bot_token", null);
   }
 
   private static void updateAuth() {
@@ -88,6 +88,7 @@ public class ApiConnector {
       public Response intercept(Interceptor.Chain chain) throws IOException {
         Request original = chain.request();
 
+        String token = getToken();
         if (token == null) {
           return chain.proceed(original);
         }
@@ -115,28 +116,16 @@ public class ApiConnector {
       throw new IllegalStateException("Not initialized");
     }
 
-    boolean updatedPreference = false;
-    String token = preferences.getString("bot_token", null);
-    if (token != null) {
-      if (!token.equals(ApiConnector.token)) {
-        ApiConnector.token = token;
-        updatedPreference = true;
-        isAdmin = null;
-        hasAdmin = null;
-        ADMIN_STATE_OBSERVABLE.notifyObservers();
-      }
-    }
-
+    boolean updatedTrust = false;
     boolean trustEveryone = preferences.getBoolean("bot_trust", false);
     if (trustEveryone != ApiConnector.trustEveryone) {
       ApiConnector.trustEveryone = trustEveryone;
+      updatedTrust = true;
       updateAuth();
-      updatedPreference = true;
     }
 
-
     String url = preferences.getString("bot_url", defaultUrl);
-    if (updatedPreference || !url.equals(currentUrl)) {
+    if (updatedTrust || !url.equals(currentUrl)) {
       currentUrl = url;
       service = builder.baseUrl(url).build().create(BotService.class);
     }
@@ -164,68 +153,27 @@ public class ApiConnector {
     return getService();
   }
 
-  public static void updateIsAdmin(Boolean isAdmin) {
-    ApiConnector.isAdmin = isAdmin;
-    ADMIN_STATE_OBSERVABLE.notifyObservers();
-  }
+  /**
+   * @return this user
+   */
+  @NonNull
+  public static Optional<ApiUser> getUser() {
+    String token = getToken();
+    if (token == null) {
+      return Optional.empty();
+    }
 
-  public static void updateHasAdmin(Boolean hasAdmin) {
-    ApiConnector.hasAdmin = hasAdmin;
-    ADMIN_STATE_OBSERVABLE.notifyObservers();
+    return Optional.of(ApiUser.fromToken(token));
   }
 
   /**
    * Whether this user is admin.
-   * If the value is not known, a callback will be enqueued to retrieve it and the default value is returned.
    *
    * @return True, if this user is an admin. Defaults to False.
    */
   public static boolean isAdmin() {
-    if (isAdmin == null) {
-      getService().isAdmin().enqueue(new Callback<Boolean>() {
-        @Override
-        public void onResponse(Call<Boolean> call, retrofit2.Response<Boolean> response) {
-          if (response.isSuccessful()) {
-            isAdmin = response.body();
-            ADMIN_STATE_OBSERVABLE.notifyObservers();
-          }
-        }
-
-        @Override
-        public void onFailure(Call<Boolean> call, Throwable t) {
-        }
-      });
-    }
-    // Returns false for null and Boolean.FALSE
-    return isAdmin == Boolean.TRUE;
-  }
-
-  /**
-   * Whether there is an admin on the server.
-   * If not, {@link BotService#claimAdmin()} is possible.
-   * <p/>
-   * If the value is not known, a callback will be enqueued to retrieve it and the default value is returned.
-   *
-   * @return True, if there is and admin. Defaults to True.
-   */
-  public static boolean hasAdmin() {
-    if (hasAdmin == null) {
-      getService().hasAdmin().enqueue(new Callback<Boolean>() {
-        @Override
-        public void onResponse(Call<Boolean> call, retrofit2.Response<Boolean> response) {
-          if (response.isSuccessful()) {
-            hasAdmin = response.body();
-            ADMIN_STATE_OBSERVABLE.notifyObservers();
-          }
-        }
-
-        @Override
-        public void onFailure(Call<Boolean> call, Throwable t) {
-        }
-      });
-    }
-    // Returns true for null or Boolean.TRUE
-    return hasAdmin != Boolean.FALSE;
+    Optional<ApiUser> user = getUser();
+    return user.isPresent() && user.get().hasPermission("admin");
   }
 }
 

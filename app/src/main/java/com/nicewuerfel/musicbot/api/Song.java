@@ -12,17 +12,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Song implements Parcelable {
+public final class Song implements Parcelable {
 
-  private String song_id;
-  private String api_name;
-  private String title;
-  private String description;
-  private String albumArtUrl;
-  private String str_rep;
-  private String duration;
+  private final String song_id;
+  private final String api_name;
+  private final String title;
+  private final String description;
+  private final String albumArtUrl;
+  private final String str_rep;
+  private final String duration;
 
-  private Song() {
+  protected Song(Parcel in) {
+    song_id = in.readString();
+    api_name = in.readString();
+    title = in.readString();
+    description = in.readString();
+    albumArtUrl = in.readString();
+    str_rep = in.readString();
+    duration = in.readString();
   }
 
   @NonNull
@@ -84,15 +91,6 @@ public class Song implements Parcelable {
     return song_id.hashCode();
   }
 
-  protected Song(Parcel in) {
-    song_id = in.readString();
-    api_name = in.readString();
-    title = in.readString();
-    description = in.readString();
-    albumArtUrl = in.readString();
-    str_rep = in.readString();
-    duration = in.readString();
-  }
 
   public static final Creator<Song> CREATOR = new Creator<Song>() {
     @Override

@@ -28,7 +28,6 @@ import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.User;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import javax.net.ssl.SSLHandshakeException;
 
