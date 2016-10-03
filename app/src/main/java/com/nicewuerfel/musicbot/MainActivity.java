@@ -179,16 +179,13 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.main_action_bar_menu, menu);
     final MenuItem claimAdminItem = menu.findItem(R.id.claim_admin_rights);
-    final MenuItem adminPanelItem = menu.findItem(R.id.show_admin_panel);
     menuObserver = new Observer() {
       @Override
       public void update(Observable observable, Object data) {
-        adminPanelItem.setVisible(ApiConnector.isAdmin());
         claimAdminItem.setVisible(!BotState.getInstance().hasAdmin());
       }
     };
     menuObserver.update(null, null);
-    // TODO observe isAdmin
     BotState.getInstance().addHasAdminObserver(menuObserver);
     return true;
   }

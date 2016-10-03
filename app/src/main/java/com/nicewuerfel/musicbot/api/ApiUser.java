@@ -73,7 +73,15 @@ public class ApiUser implements Parcelable {
   }
 
   public boolean hasPermission(@NonNull String permission) {
-    return permissions.contains(permission);
+    switch (permission) {
+      case "admin":
+        return permissions.contains("admin");
+      case "exit":
+      case "reset":
+        return permissions.contains(permission) || permissions.contains("admin");
+      default:
+        return permissions.contains(permission) || permissions.contains("admin") || permissions.contains("mod");
+    }
   }
 
   @Override

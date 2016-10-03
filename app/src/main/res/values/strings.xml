@@ -41,6 +41,8 @@
     <string name="admin_action_exit">Shutdown bot</string>
     <string name="admin_action_reset">Reset bot</string>
     <string name="activity_admin_title">Admin Panel</string>
+    <string name="edit_permissions">Edit permissions</string>
+    <string name="select_playlist">Select active playlist</string>
 
     <!-- Strings related to Settings -->
 
