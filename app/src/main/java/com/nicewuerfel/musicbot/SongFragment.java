@@ -241,7 +241,6 @@ public class SongFragment extends Fragment {
       removeView.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          Logger.getAnonymousLogger().info("REMOVE CLICK " + song); //TODO delete
           if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
