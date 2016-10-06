@@ -197,10 +197,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
         Intent settingsIntent = new Intent(this, SettingsActivity.class);
         startActivity(settingsIntent);
         return true;
-      case android.R.id.home:
-        Intent mainIntent = new Intent(this, MainActivity.class);
-        startActivity(mainIntent);
-        return true;
       case R.id.refresh_button:
         onRefreshClick();
         return true;
