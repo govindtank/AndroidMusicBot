@@ -20,6 +20,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
@@ -41,6 +42,7 @@ public class PlayerControlFragment extends Fragment {
   private TextView songTitleText;
   private TextView songDescriptionText;
   private TextView songDurationText;
+  private ScheduledFuture<?> refreshTask;
 
   public PlayerControlFragment() {
     // Required empty public constructor
@@ -122,7 +124,7 @@ public class PlayerControlFragment extends Fragment {
   @Override
   public void onResume() {
     super.onResume();
-    executor.scheduleWithFixedDelay(new Runnable() {
+    refreshTask = executor.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
         try {
@@ -141,12 +143,16 @@ public class PlayerControlFragment extends Fragment {
 
   @Override
   public void onPause() {
+    if (refreshTask != null) {
+      refreshTask.cancel(false);
+    }
     super.onPause();
   }
 
   @Override
   public void onStop() {
     BotState.getInstance().deletePlayerStateObserver(playerStateObserver);
+    refreshTask = null;
     executor.shutdownNow();
     executor = null;
     super.onStop();
