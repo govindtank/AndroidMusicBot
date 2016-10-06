@@ -48,6 +48,8 @@
             android:name=".AdminActivity"
             android:label="@string/activity_admin_title">
         </activity>
+        <activity android:name=".EditPermissionsActivity">
+        </activity>
     </application>
 
 </manifest>

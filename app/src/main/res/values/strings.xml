@@ -43,6 +43,9 @@
     <string name="activity_admin_title">Admin Panel</string>
     <string name="edit_permissions">Edit permissions</string>
     <string name="select_playlist">Select active playlist</string>
+    <string name="edit">Edit</string>
+    <string name="show_permissions">Show %d permissions</string>
+    <string name="user_permissions">%s\'s permissions</string>
 
     <!-- Strings related to Settings -->
 

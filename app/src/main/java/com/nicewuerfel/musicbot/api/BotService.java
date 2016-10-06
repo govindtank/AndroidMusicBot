@@ -187,7 +187,7 @@ public interface BotService {
    * @return 'OK' on success
    */
   @PUT("grant_permission")
-  Call<String> grantPermission(String username, Permission permission);
+  Call<String> grantPermission(@Query("target_username") String username, @Body Permission permission);
 
   /**
    * Revokes a permission from a user.
@@ -199,7 +199,7 @@ public interface BotService {
    * @return 'OK' on success
    */
   @PUT("revoke_permission")
-  Call<String> revokePermission(String username, Permission permission);
+  Call<String> revokePermission(@Query("target_username") String username, @Body Permission permission);
 
   @PUT("exit_bot")
   Call<String> exitBot();

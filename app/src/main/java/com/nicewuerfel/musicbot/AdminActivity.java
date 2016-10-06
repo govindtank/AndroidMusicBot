@@ -116,8 +116,8 @@ public class AdminActivity extends AppCompatActivity {
   }
 
   public void onEditPermissionsButton(View view) {
-    Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show();
-    // TODO show edit permissions activity
+    Intent intent = new Intent(this, EditPermissionsActivity.class);
+    startActivity(intent);
   }
 
   public void onSelectPlaylistButton(View view) {
