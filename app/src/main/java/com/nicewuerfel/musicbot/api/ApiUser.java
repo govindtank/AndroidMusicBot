@@ -94,4 +94,27 @@ public class ApiUser implements Parcelable {
     dest.writeString(username);
     dest.writeStringList(permissions);
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ApiUser apiUser = (ApiUser) o;
+
+    return username.equals(apiUser.username);
+  }
+
+  @Override
+  public int hashCode() {
+    return username.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "ApiUser{" +
+        "username='" + username + '\'' +
+        ", permissions=" + permissions +
+        '}';
+  }
 }
