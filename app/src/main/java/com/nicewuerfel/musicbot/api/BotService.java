@@ -206,4 +206,13 @@ public interface BotService {
 
   @PUT("reset_bot")
   Call<String> resetBot();
+
+  @GET("get_available_offline_playlists")
+  Call<List<Playlist>> getAvailablePlaylists();
+
+  @GET("get_active_playlist")
+  Call<Playlist> getActivePlaylist();
+
+  @PUT("mark_active")
+  Call<String> setActivePlaylist(@Query("playlist_id") String playlistId);
 }
