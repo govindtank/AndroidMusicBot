@@ -2,8 +2,17 @@ package com.nicewuerfel.musicbot.api;
 
 
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.widget.ImageView;
+
+import com.nostra13.universalimageloader.cache.memory.impl.LRULimitedMemoryCache;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -23,6 +32,8 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -34,6 +45,8 @@ public final class ApiConnector {
   private static String currentUrl;
   private static BotService service;
   private static boolean trustEveryone = false;
+
+  private static LruMemoryCache images = new LruMemoryCache((int) (Runtime.getRuntime().maxMemory() * (15 / 100f)));
 
   static {
     builder = new Retrofit.Builder().addConverterFactory(GsonConverterFactory.create());
@@ -174,6 +187,45 @@ public final class ApiConnector {
   public static boolean isAdmin() {
     Optional<ApiUser> user = getUser();
     return user.isPresent() && user.get().hasPermission("admin");
+  }
+
+  /**
+   * Asynchronously tries to retrieve the album art for the given song and displays it in the given view.
+   *
+   * @param song         the song to load
+   * @param albumArtView the view to display the album art in
+   */
+  public static void displayAlbumArt(@NonNull final Song song, @NonNull final ImageView albumArtView) {
+    String albumArtUrl = song.getAlbumArtUrl();
+    if (albumArtUrl != null) {
+      ImageLoader imageLoader = ImageLoader.getInstance();
+      if (!imageLoader.isInited()) {
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(albumArtView.getContext())
+            .memoryCache(images)
+            .build();
+        imageLoader.init(config);
+      }
+      imageLoader.displayImage(albumArtUrl, albumArtView);
+    } else {
+      Bitmap cacheImage = images.get(song.getSongId());
+      if (cacheImage == null) {
+        ApiConnector.getService().getAlbumArt(song.getSongId()).enqueue(new DummyCallback<ResponseBody>() {
+          @Override
+          public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+            if (response.isSuccessful()) {
+              ResponseBody body = response.body();
+              if (body != null) {
+                Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+                images.put(song.getSongId(), bitmap);
+                albumArtView.setImageBitmap(bitmap);
+              }
+            }
+          }
+        });
+      } else {
+        albumArtView.setImageBitmap(cacheImage);
+      }
+    }
   }
 }
 

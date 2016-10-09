@@ -23,8 +23,6 @@ import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MusicApi;
 import com.nicewuerfel.musicbot.api.Song;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +48,6 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
-    ImageLoader.getInstance().init(config);
     setContentView(R.layout.activity_search);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);

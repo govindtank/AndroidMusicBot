@@ -230,24 +230,7 @@ public class SongFragment extends Fragment {
 
       final ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
       albumView.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-      String albumArtUrl = song.getAlbumArtUrl();
-      if (albumArtUrl != null) {
-        ImageLoader.getInstance().displayImage(albumArtUrl, albumView);
-      } else if (song.getApiName().equals("offline_api")) {
-        ApiConnector.getService().getAlbumArt(song.getSongId()).enqueue(new DummyCallback<ResponseBody>() {
-          @Override
-          public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-            if (response.isSuccessful()) {
-              ResponseBody body = response.body();
-              if (body != null) {
-                Bitmap bm = BitmapFactory.decodeStream(response.body().byteStream());
-                albumView.setImageBitmap(bm);
-              }
-            }
-          }
-        });
-
-      }
+      ApiConnector.displayAlbumArt(song, albumView);
 
       TextView titleText = (TextView) view.findViewById(R.id.song_title);
       titleText.setText(song.getTitle());

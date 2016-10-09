@@ -45,8 +45,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
-    ImageLoader.getInstance().init(config);
     setContentView(R.layout.activity_main);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
