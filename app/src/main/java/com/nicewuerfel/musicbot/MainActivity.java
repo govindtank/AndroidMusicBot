@@ -292,8 +292,12 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
         if (state != null) {
           BotState.getInstance().setPlayerState(state);
         }
+
+        Toast.makeText(MainActivity.this, R.string.refresh_success, Toast.LENGTH_SHORT).show();
       } else if (response.code() == 401) {
         logout();
+      } else {
+        Toast.makeText(MainActivity.this, R.string.unsuccessful_refresh, Toast.LENGTH_SHORT).show();
       }
     }
 

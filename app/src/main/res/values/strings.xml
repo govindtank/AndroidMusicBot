@@ -48,6 +48,8 @@
     <string name="pref_title_server_port">Server port</string>
     <string name="pref_default_server_url">https://localhost:8443</string>
     <string name="queued_by">Queued by %s</string>
+    <string name="unsuccessful_refresh">Unsuccessful refresh</string>
+    <string name="refresh_success">Refresh successful</string>
 
     <!-- Strings related to Settings -->
 
