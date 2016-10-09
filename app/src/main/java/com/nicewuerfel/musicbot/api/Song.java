@@ -1,18 +1,12 @@
 package com.nicewuerfel.musicbot.api;
 
 
-import android.app.SearchManager;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class Song implements Parcelable {
 
@@ -29,6 +23,8 @@ public final class Song implements Parcelable {
   @SerializedName("user")
   private final String username;
 
+  private transient boolean isLastPlayed = false;
+
   protected Song(Parcel in) {
     songId = in.readString();
     apiName = in.readString();
@@ -38,6 +34,7 @@ public final class Song implements Parcelable {
     stringRep = in.readString();
     duration = in.readString();
     username = in.readString();
+    isLastPlayed = in.readByte() != 0;
   }
 
   @NonNull
@@ -90,6 +87,14 @@ public final class Song implements Parcelable {
     return username;
   }
 
+  public boolean isLastPlayed() {
+    return isLastPlayed;
+  }
+
+  void isLastPlayed(boolean isLastPlayed) {
+    this.isLastPlayed = isLastPlayed;
+  }
+
   public String toString() {
     return getStringRepresentation();
   }
@@ -137,5 +142,6 @@ public final class Song implements Parcelable {
     parcel.writeString(stringRep);
     parcel.writeString(duration);
     parcel.writeString(username);
+    parcel.writeByte((byte) (isLastPlayed ? 1 : 0));
   }
 }

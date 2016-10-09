@@ -1,5 +1,6 @@
 package com.nicewuerfel.musicbot;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.design.internal.NavigationMenu;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
       @Override
       public void update(Observable observable, Object data) {
         PlayerState state = (PlayerState) data;
-        queueFragment.updateQueue(state.getQueue());
+        queueFragment.updateQueue(state.getCombinedLastPlayedAndQueue());
       }
     };
   }
@@ -278,8 +280,27 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   }
 
   @Override
-  public void onSongClick(Song song) {
-    // ignore
+  public void onSongClick(final Song song) {
+    if (song.isLastPlayed()) {
+      new AlertDialog.Builder(this)
+          .setCancelable(true)
+          .setTitle(getString(R.string.queue_last_played, song.getTitle()))
+          .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+              ApiConnector.getService().queue(song).enqueue(new DummyCallback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                  if (response.isSuccessful()) {
+                    refreshPlayerState();
+                  }
+                }
+              });
+            }
+          })
+          .setNegativeButton(android.R.string.no, null)
+          .show();
+    }
   }
 
   private class GetPlayerStateCallback implements Callback<PlayerState> {

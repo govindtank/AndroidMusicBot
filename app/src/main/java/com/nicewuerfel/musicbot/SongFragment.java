@@ -1,7 +1,9 @@
 package com.nicewuerfel.musicbot;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -105,6 +107,40 @@ public class SongFragment extends Fragment {
     return view;
   }
 
+  private int findFirstQueued(List<Song> songs) {
+    if (songs.isEmpty()) {
+      return -1;
+    }
+    int halfSize = songs.size() / 2;
+    if (songs.get(halfSize).isLastPlayed()) {
+      if (halfSize == songs.size() - 1) {
+        // There are no songs in the queue
+        return halfSize;
+      }
+      return halfSize + findFirstQueued(songs.subList(halfSize + 1, songs.size())) + 1;
+    } else if (halfSize == 0 || songs.get(halfSize - 1).isLastPlayed()) {
+      return halfSize;
+    } else {
+      List<Song> subList = songs.subList(0, halfSize);
+      return halfSize - (subList.size() - findFirstQueued(subList));
+    }
+  }
+
+  private void selectFirstQueued() {
+    if (songs.isEmpty()) {
+      return;
+    }
+    int index = findFirstQueued(songs);
+    DragSortListView listView = (DragSortListView) getView();
+    listView.setSelection(index);
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    selectFirstQueued();
+  }
+
   @Override
   public void onSaveInstanceState(Bundle outState) {
     outState.putParcelableArrayList(ARG_SONG_LIST, songs);
@@ -133,6 +169,7 @@ public class SongFragment extends Fragment {
       songAdapter.notifyDataSetChanged();
       songAdapter.setNotifyOnChange(false);
     }
+    selectFirstQueued();
   }
 
   private void updateViews() {
@@ -205,6 +242,11 @@ public class SongFragment extends Fragment {
         views.add(view);
       }
 
+      boolean isLastPlayed = song.isLastPlayed();
+      if (isLastPlayed) {
+        view.setAlpha(0.5f);
+      }
+
       View contentView = view.findViewById(R.id.non_drag_handle_content);
       contentView.setOnClickListener(new View.OnClickListener() {
         @Override
@@ -235,7 +277,7 @@ public class SongFragment extends Fragment {
       }
 
       View removeView = view.findViewById(R.id.remove_button);
-      if (removable) {
+      if (removable && !isLastPlayed) {
         removeView.setVisibility(View.VISIBLE);
       } else {
         removeView.setVisibility(View.GONE);
@@ -252,7 +294,7 @@ public class SongFragment extends Fragment {
       });
 
       View moveView = view.findViewById(R.id.drag_handle);
-      if (movable) {
+      if (movable && !isLastPlayed) {
         moveView.setVisibility(View.VISIBLE);
       } else {
         moveView.setVisibility(View.GONE);

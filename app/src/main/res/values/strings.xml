@@ -50,6 +50,7 @@
     <string name="queued_by">Queued by %s</string>
     <string name="unsuccessful_refresh">Unsuccessful refresh</string>
     <string name="refresh_success">Refresh successful</string>
+    <string name="queue_last_played">Enqueue %s again?</string>
 
     <!-- Strings related to Settings -->
 

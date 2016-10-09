@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.util.AsyncListUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +66,11 @@ public final class PlayerState implements Parcelable {
   @NonNull
   public List<Song> getQueue() {
     return queue;
+  }
+
+  @NonNull
+  public List<Song> getCombinedLastPlayedAndQueue() {
+    return new CompositeUnmodifiableList<>(new LastPlayedList(last_played), queue);
   }
 
   public boolean isPaused() {
