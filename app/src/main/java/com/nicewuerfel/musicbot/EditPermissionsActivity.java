@@ -90,15 +90,20 @@ public class EditPermissionsActivity extends AppCompatActivity implements UserFr
   }
 
   @Override
+  public void onBackPressed() {
+    if (selectedUser != null) {
+      selectedUser = null;
+      refresh();
+    } else {
+      super.onBackPressed();
+    }
+  }
+
+  @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case android.R.id.home:
-        if (selectedUser != null) {
-          selectedUser = null;
-          refresh();
-        } else {
-          onBackPressed();
-        }
+        onBackPressed();
         return true;
       case R.id.refresh_button:
         refresh();
