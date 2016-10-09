@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -215,4 +216,7 @@ public interface BotService {
 
   @PUT("mark_active")
   Call<String> setActivePlaylist(@Query("playlist_id") String playlistId);
+
+  @GET("get_album_art")
+  Call<ResponseBody> getAlbumArt(@Query("song_id") String songId);
 }

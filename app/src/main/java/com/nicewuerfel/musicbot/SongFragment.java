@@ -1,6 +1,8 @@
 package com.nicewuerfel.musicbot;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -18,7 +20,10 @@ import com.nicewuerfel.musicbot.api.MoveRequestBody;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.decode.ImageDecoder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +31,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
+
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A fragment representing a list of Items.
@@ -217,11 +228,25 @@ public class SongFragment extends Fragment {
         }
       });
 
-      ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
+      final ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
       albumView.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
       String albumArtUrl = song.getAlbumArtUrl();
       if (albumArtUrl != null) {
         ImageLoader.getInstance().displayImage(albumArtUrl, albumView);
+      } else if (song.getApiName().equals("offline_api")) {
+        ApiConnector.getService().getAlbumArt(song.getSongId()).enqueue(new DummyCallback<ResponseBody>() {
+          @Override
+          public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            if (response.isSuccessful()) {
+              ResponseBody body = response.body();
+              if (body != null) {
+                Bitmap bm = BitmapFactory.decodeStream(response.body().byteStream());
+                albumView.setImageBitmap(bm);
+              }
+            }
+          }
+        });
+
       }
 
       TextView titleText = (TextView) view.findViewById(R.id.song_title);
