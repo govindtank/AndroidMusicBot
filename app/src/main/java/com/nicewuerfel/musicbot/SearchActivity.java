@@ -170,22 +170,9 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
       case android.R.id.home:
         finish();
         return true;
-      case R.id.refresh_button:
-        onRefreshClick();
-        return true;
-      case R.id.action_logout:
-        logout();
-        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
-  }
-
-  private void onRefreshClick() {
-    if (isRefreshing()) {
-      return;
-    }
-    refreshSearchResults();
   }
 
   private void refreshSearchResults() {
@@ -260,29 +247,44 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
     @Override
     public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
-      List<Song> songs = response.body();
-      if (songs == null) {
-        songs = Collections.emptyList();
-      }
       if (SearchActivity.this.query.equals(query)) {
-        onSongsUpdate(songs);
+        if (response.isSuccessful()) {
+          List<Song> songs = response.body();
+          if (songs == null) {
+            songs = Collections.emptyList();
+          }
+          onSongsUpdate(songs);
+        } else {
+          showError();
+        }
+
+        searchCall = null;
       }
-      searchCall = null;
     }
 
     @Override
     public void onFailure(Call<List<Song>> call, Throwable t) {
-      if (!call.isCanceled()) {
-        ConnectionErrorFragment errorFragment = ConnectionErrorFragment.newInstance();
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.activity_content, errorFragment)
-            .commit();
-        View view = errorFragment.getView();
-        if (view != null) {
-          Snackbar.make(view, "ERROR", Snackbar.LENGTH_INDEFINITE);
-        }
+      if (!call.isCanceled() && SearchActivity.this.query.equals(query)) {
+        showError();
+        searchCall = null;
       }
-      searchCall = null;
+    }
+
+    private void showError() {
+      ConnectionErrorFragment errorFragment = ConnectionErrorFragment.newInstance();
+      getSupportFragmentManager().beginTransaction()
+          .replace(R.id.activity_content, errorFragment)
+          .commit();
+      getSupportFragmentManager().executePendingTransactions();
+      View view = errorFragment.getView();
+      if (view != null) {
+        view.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            refreshSearchResults();
+          }
+        });
+      }
     }
   }
 }
