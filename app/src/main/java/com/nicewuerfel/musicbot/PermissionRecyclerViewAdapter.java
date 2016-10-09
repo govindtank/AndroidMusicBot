@@ -9,7 +9,6 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.nicewuerfel.musicbot.PermissionFragment.OnListFragmentInteractionListener;
-import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.Permission;
 

@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 
 import java.text.ParseException;
 import java.util.Collections;
