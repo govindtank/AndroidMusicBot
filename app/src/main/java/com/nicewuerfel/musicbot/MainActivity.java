@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   @Override
   protected void onResume() {
     super.onResume();
-    refreshPlayerState();
+    refreshPlayerState(false);
   }
 
   @Override
@@ -242,12 +242,12 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     startActivity(intent);
   }
 
-  void refreshPlayerState() {
+  private void refreshPlayerState(boolean showToast) {
     if (refreshCall != null) {
       refreshCall.cancel();
     }
     refreshCall = ApiConnector.getService().getPlayerState();
-    refreshCall.enqueue(new GetPlayerStateCallback());
+    refreshCall.enqueue(new GetPlayerStateCallback(showToast));
     ApiConnector.getService().getMusicApis().enqueue(new BotState.MusicApisCallback());
     ApiConnector.getService().hasAdmin().enqueue(new BotState.HasAdminCallback());
   }
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     if (isRefreshing()) {
       return;
     }
-    refreshPlayerState();
+    refreshPlayerState(true);
   }
 
   public boolean isRefreshing() {
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     ApiConnector.getService().dequeue(song).enqueue(new DummyCallback<String>() {
       @Override
       public void onResponse(Call<String> call, Response<String> response) {
-        refreshPlayerState();
+        refreshPlayerState(false);
       }
     });
   }
@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
                   if (response.isSuccessful()) {
-                    refreshPlayerState();
+                    refreshPlayerState(false);
                   }
                 }
               });
@@ -304,6 +304,13 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   }
 
   private class GetPlayerStateCallback implements Callback<PlayerState> {
+
+    private final boolean showToast;
+
+    public GetPlayerStateCallback(boolean showToast) {
+      this.showToast = showToast;
+    }
+
     @Override
     public void onResponse(Call<PlayerState> call, Response<PlayerState> response) {
       refreshCall = null;
@@ -314,11 +321,13 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
           BotState.getInstance().setPlayerState(state);
         }
 
-        Toast.makeText(MainActivity.this, R.string.refresh_success, Toast.LENGTH_SHORT).show();
+        if (showToast)
+          Toast.makeText(MainActivity.this, R.string.refresh_success, Toast.LENGTH_SHORT).show();
       } else if (response.code() == 401) {
         logout();
       } else {
-        Toast.makeText(MainActivity.this, R.string.unsuccessful_refresh, Toast.LENGTH_SHORT).show();
+        if (showToast)
+          Toast.makeText(MainActivity.this, R.string.unsuccessful_refresh, Toast.LENGTH_SHORT).show();
       }
     }
 
