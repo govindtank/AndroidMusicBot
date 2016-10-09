@@ -1,9 +1,7 @@
 package com.nicewuerfel.musicbot;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -273,7 +271,7 @@ public class SongFragment extends Fragment {
       durationText.setText(song.getDuration());
 
       if (song.getUsername() != null) {
-        ((TextView) view.findViewById(R.id.song_user)).setText(getString(R.string.queued_by, song.getUsername()));
+        ((TextView) view.findViewById(R.id.song_user)).setText(getString(R.string.enqueued_by, song.getUsername()));
       }
 
       View removeView = view.findViewById(R.id.remove_button);

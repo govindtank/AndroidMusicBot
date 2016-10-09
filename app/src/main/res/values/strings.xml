@@ -27,7 +27,7 @@
     <string name="error_user_exists">User already exists</string>
     <string name="error_unknown">An unknown error occurred</string>
     <string name="action_logout">Log out</string>
-    <string name="invalid_url">Invalid bot url. Please change it...</string>
+    <string name="invalid_url">Invalid bot url. Please change it…</string>
     <string name="queue_failed">Queuing failed</string>
     <string name="connection_failed">Connection failed</string>
     <string name="trust_every_cert">Trust every SSL certificate</string>
@@ -47,7 +47,7 @@
     <string name="user_permissions">%s\'s permissions</string>
     <string name="pref_title_server_port">Server port</string>
     <string name="pref_default_server_url">https://localhost:8443</string>
-    <string name="queued_by">Queued by %s</string>
+    <string name="enqueued_by">Enqueued by %s</string>
     <string name="unsuccessful_refresh">Unsuccessful refresh</string>
     <string name="refresh_success">Refresh successful</string>
     <string name="queue_last_played">Enqueue %s again?</string>
