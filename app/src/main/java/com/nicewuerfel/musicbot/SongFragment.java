@@ -310,6 +310,9 @@ public class SongFragment extends Fragment {
       if (from == to) {
         return;
       }
+      if (to < findFirstQueued(songs)) {
+        return;
+      }
       Song movedSong = songs.get(from);
       Song otherSong = songs.get(to);
       songs.remove(from);
