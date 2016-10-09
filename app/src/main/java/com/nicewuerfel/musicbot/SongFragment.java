@@ -259,7 +259,7 @@ public class SongFragment extends Fragment {
 
       final ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
       albumView.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-      ApiConnector.displayAlbumArt(song, albumView);
+      ApiConnector.displayAlbumArt(song, albumView, false);
 
       TextView titleText = (TextView) view.findViewById(R.id.song_title);
       titleText.setText(song.getTitle());

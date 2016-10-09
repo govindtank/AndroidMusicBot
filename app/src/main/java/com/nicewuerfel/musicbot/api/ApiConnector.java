@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
@@ -192,9 +193,11 @@ public final class ApiConnector {
    *
    * @param song         the song to load
    * @param albumArtView the view to display the album art in
+   * @param hideOnFail   whether to set visibility of the view to GONE if no image can be loaded
    */
-  public static void displayAlbumArt(@NonNull final Song song, @NonNull final ImageView albumArtView) {
-    String albumArtUrl = song.getAlbumArtUrl();
+  public static void displayAlbumArt(@NonNull final Song song, @NonNull final ImageView albumArtView, final boolean hideOnFail) {
+    albumArtView.setVisibility(View.VISIBLE);
+    final String albumArtUrl = song.getAlbumArtUrl();
     if (albumArtUrl != null) {
       ImageLoader imageLoader = ImageLoader.getInstance();
       if (!imageLoader.isInited()) {
@@ -216,7 +219,11 @@ public final class ApiConnector {
                 Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
                 images.put(song.getSongId(), bitmap);
                 albumArtView.setImageBitmap(bitmap);
+              } else if (hideOnFail) {
+                albumArtView.setVisibility(View.GONE);
               }
+            } else if (hideOnFail) {
+              albumArtView.setVisibility(View.GONE);
             }
           }
         });

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nicewuerfel.musicbot.api.ApiConnector;
@@ -44,6 +45,7 @@ public class PlayerControlFragment extends Fragment {
   private TextView songTitleText;
   private TextView songDescriptionText;
   private TextView songDurationText;
+  private ImageView songAlbumArt;
   private ScheduledFuture<?> refreshTask;
 
   public PlayerControlFragment() {
@@ -93,6 +95,7 @@ public class PlayerControlFragment extends Fragment {
     songDescriptionText = (TextView) view.findViewById(R.id.current_song_description);
     songDurationText = (TextView) view.findViewById(R.id.current_song_duration);
     songTitleText.setSelected(true);
+    songAlbumArt = (ImageView) view.findViewById(R.id.current_song_album_art);
 
     nextButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -204,6 +207,10 @@ public class PlayerControlFragment extends Fragment {
           songDescriptionText.setText(song.getDescription());
         }
         songDurationText.setText(song.getDuration());
+
+        ApiConnector.displayAlbumArt(song, songAlbumArt, true);
+
+        // TODO hide if not present
       }
     }
   }
