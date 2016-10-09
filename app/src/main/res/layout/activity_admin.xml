@@ -13,28 +13,28 @@
 
         <Button
             android:id="@+id/exit_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onExitButton"
             android:text="@string/admin_action_exit"/>
 
         <Button
             android:id="@+id/reset_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onResetButton"
             android:text="@string/admin_action_reset"/>
 
         <Button
             android:id="@+id/edit_perms_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onEditPermissionsButton"
             android:text="@string/edit_permissions"/>
 
         <Button
             android:id="@+id/select_playlist_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onSelectPlaylistButton"
             android:text="@string/select_playlist"/>
