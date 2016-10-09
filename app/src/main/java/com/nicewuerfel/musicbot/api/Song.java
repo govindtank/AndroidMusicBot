@@ -8,38 +8,46 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class Song implements Parcelable {
 
-  private final String song_id;
-  private final String api_name;
+  @SerializedName("song_id")
+  private final String songId;
+  @SerializedName("api_name")
+  private final String apiName;
   private final String title;
   private final String description;
   private final String albumArtUrl;
-  private final String str_rep;
+  @SerializedName("str_rep")
+  private final String stringRep;
   private final String duration;
+  @SerializedName("user")
+  private final String username;
 
   protected Song(Parcel in) {
-    song_id = in.readString();
-    api_name = in.readString();
+    songId = in.readString();
+    apiName = in.readString();
     title = in.readString();
     description = in.readString();
     albumArtUrl = in.readString();
-    str_rep = in.readString();
+    stringRep = in.readString();
     duration = in.readString();
+    username = in.readString();
   }
 
   @NonNull
   public String getSongId() {
-    return song_id;
+    return songId;
   }
 
   @NonNull
   public String getApiName() {
-    return api_name;
+    return apiName;
   }
 
   /**
@@ -64,12 +72,22 @@ public final class Song implements Parcelable {
 
   @NonNull
   public String getStringRepresentation() {
-    return str_rep;
+    return stringRep;
   }
 
   @Nullable
   public String getDuration() {
     return duration;
+  }
+
+  /**
+   * Get the username of the user who queued this song.
+   *
+   * @return the username
+   */
+  @Nullable
+  public String getUsername() {
+    return username;
   }
 
   public String toString() {
@@ -83,12 +101,12 @@ public final class Song implements Parcelable {
 
     Song song = (Song) o;
 
-    return song_id.equals(song.song_id);
+    return songId.equals(song.songId);
   }
 
   @Override
   public int hashCode() {
-    return song_id.hashCode();
+    return songId.hashCode();
   }
 
 
@@ -111,39 +129,13 @@ public final class Song implements Parcelable {
 
   @Override
   public void writeToParcel(Parcel parcel, int i) {
-    parcel.writeString(song_id);
-    parcel.writeString(api_name);
+    parcel.writeString(songId);
+    parcel.writeString(apiName);
     parcel.writeString(title);
     parcel.writeString(description);
     parcel.writeString(albumArtUrl);
-    parcel.writeString(str_rep);
+    parcel.writeString(stringRep);
     parcel.writeString(duration);
-  }
-
-  public Object[] toColumnValues(int id) {
-    String title = getTitle();
-    if (duration != null) {
-      title += " (" + duration + ")";
-    }
-    String description = getDescription();
-    Object[] result = {
-        id, title, description
-    };
-    return result;
-  }
-
-  static final String[] columns = {
-      BaseColumns._ID,
-      SearchManager.SUGGEST_COLUMN_TEXT_1,
-      SearchManager.SUGGEST_COLUMN_TEXT_2
-  };
-  static final Map<String, Integer> columnIndices;
-
-  static {
-    Map<String, Integer> indices = new HashMap<>(16);
-    for (int i = 0; i < columns.length; i++) {
-      indices.put(columns[i], i);
-    }
-    columnIndices = Collections.unmodifiableMap(indices);
+    parcel.writeString(username);
   }
 }
