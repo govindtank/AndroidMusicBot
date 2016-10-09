@@ -31,8 +31,8 @@
 
             <ImageView
                 android:id="@+id/album_art"
-                android:layout_width="64sp"
-                android:layout_height="64sp"
+                android:layout_width="75sp"
+                android:layout_height="75sp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="8dp"
                 android:background="#eeeeee"

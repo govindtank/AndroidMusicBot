@@ -225,7 +225,14 @@ public class SongFragment extends Fragment {
       TextView descriptionText = (TextView) view.findViewById(R.id.song_description);
       descriptionText.setText(song.getDescription());
       descriptionText.setSelected(true);
-      ((TextView) view.findViewById(R.id.song_duration)).setText(song.getDuration());
+
+      TextView durationText = (TextView) view.findViewById(R.id.song_duration);
+      durationText.setVisibility(song.getDuration() == null ? View.GONE : View.VISIBLE);
+      durationText.setText(song.getDuration());
+
+      if (song.getUsername() != null) {
+        ((TextView) view.findViewById(R.id.song_user)).setText(getString(R.string.queued_by, song.getUsername()));
+      }
 
       View removeView = view.findViewById(R.id.remove_button);
       if (removable) {
