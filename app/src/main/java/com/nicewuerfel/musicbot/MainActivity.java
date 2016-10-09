@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
     setContentView(R.layout.activity_main);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     try {
-      ApiConnector.getService(preferences, getString(R.string.pref_default_server));
+      ApiConnector.getService(preferences, getString(R.string.pref_default_server_url));
     } catch (IllegalArgumentException e) {
       Toast.makeText(this, getString(R.string.invalid_url), Toast.LENGTH_LONG).show();
       Intent intent = new Intent(this, SettingsActivity.class);

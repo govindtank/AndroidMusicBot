@@ -14,9 +14,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -74,65 +72,48 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
       setHasOptionsMenu(true);
 
       final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-      final String defaultUrl = getString(R.string.pref_default_server);
 
       // Bind the summaries of EditText/List/Dialog/Ringtone preferences
       // to their values. When their values change, their summaries are
       // updated to reflect the new value, per the Android Design
       // guidelines.
-      final EditTextPreference botUrlPref = (EditTextPreference) findPreference("bot_url");
-      botUrlPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+      final EditTextPreference botHostPref = (EditTextPreference) findPreference("bot_url_host");
+      final EditTextPreference botPortPref = (EditTextPreference) findPreference("bot_url_port");
 
+      botHostPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-          String stringValue = value.toString().trim();
-          URI oldUri;
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+          String stringValue = newValue.toString().trim();
           try {
-            oldUri = new URI(stringValue);
-          } catch (URISyntaxException e) {
-            try {
-              stringValue = "https://" + stringValue;
-              oldUri = new URI(stringValue);
-            } catch (URISyntaxException e1) {
-              return false;
-            }
-          }
-          if (oldUri.getScheme() == null || oldUri.getHost() == null) {
-            try {
-              stringValue = "https://" + stringValue;
-              oldUri = new URI(stringValue);
-            } catch (URISyntaxException e1) {
-              return false;
-            }
-          }
-
-          int oldPort = oldUri.getPort();
-          URI newUri;
-          try {
-            newUri = new URI(oldUri.getScheme(), oldUri.getUserInfo(), oldUri.getHost(), oldPort == -1 ? 8443 : oldPort, oldUri.getPath(), null, null);
-          } catch (URISyntaxException e) {
+            URL url = new URL("https", stringValue, Integer.parseInt(botPortPref.getText()), "");
+            prefs.edit().putString(PreferenceKey.BOT_URL, url.toExternalForm()).apply();
+            botHostPref.setSummary(stringValue);
+            return true;
+          } catch (MalformedURLException e) {
+            e.printStackTrace();
             return false;
           }
-
-          URL newUrl;
-          try {
-            newUrl = newUri.toURL();
-          } catch (IOException e) {
-            return false;
-          }
-
-          String urlString = newUrl.toExternalForm();
-          if (!urlString.endsWith("/")) {
-            urlString += "/";
-          }
-          prefs.edit().putString(preference.getKey(), urlString).apply();
-          preference.setSummary(urlString);
-          botUrlPref.setText(urlString);
-          return false;
         }
       });
-      botUrlPref.getOnPreferenceChangeListener().onPreferenceChange(botUrlPref, prefs.getString(botUrlPref.getKey(), defaultUrl));
 
+      botPortPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+          String stringValue = newValue.toString().trim();
+          try {
+            URL url = new URL("https", botHostPref.getText(), Integer.parseInt(stringValue), "");
+            prefs.edit().putString(PreferenceKey.BOT_URL, url.toExternalForm()).apply();
+            botPortPref.setSummary(stringValue);
+            return true;
+          } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return false;
+          }
+        }
+      });
+
+      botHostPref.getOnPreferenceChangeListener().onPreferenceChange(botHostPref, prefs.getString(botHostPref.getKey(), null));
+      botPortPref.getOnPreferenceChangeListener().onPreferenceChange(botHostPref, prefs.getString(botPortPref.getKey(), null));
 
       CheckBoxPreference checkBoxPref = (CheckBoxPreference) findPreference("bot_trust");
       checkBoxPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

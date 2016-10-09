@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
 
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
     try {
-      ApiConnector.getService(preferences, getString(R.string.pref_default_server));
+      ApiConnector.getService(preferences, getString(R.string.pref_default_server_url));
     } catch (IllegalArgumentException e) {
       Toast.makeText(this, getString(R.string.invalid_url), Toast.LENGTH_LONG).show();
       Intent intent = new Intent(this, SettingsActivity.class);
@@ -112,7 +112,6 @@ public class LoginActivity extends AppCompatActivity {
     if (prefs.getString("bot_token", null) != null) {
       finish();
     }
-    ApiConnector.getService(prefs, getString(R.string.pref_default_server));
   }
 
   @Override

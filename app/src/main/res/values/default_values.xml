@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="bot_trust">false</bool>
+    <integer name="bot_url_port">8443</integer>
+    <string name="bot_url_host">localhost</string>
+</resources>

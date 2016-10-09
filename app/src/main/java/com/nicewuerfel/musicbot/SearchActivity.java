@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.DummyCallback;
@@ -51,16 +50,6 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     setContentView(R.layout.activity_search);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
-
-    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-    try {
-      ApiConnector.getService(preferences, getString(R.string.pref_default_server));
-    } catch (IllegalArgumentException e) {
-      Toast.makeText(this, getString(R.string.invalid_url), Toast.LENGTH_LONG).show();
-      Intent intent = new Intent(this, SettingsActivity.class);
-      startActivity(intent);
-    }
-
     setTitle(R.string.title_activity_search);
     ActionBar actionBar = getSupportActionBar();
     if (actionBar != null) {

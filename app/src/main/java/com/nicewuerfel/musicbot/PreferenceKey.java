@@ -5,7 +5,8 @@ package com.nicewuerfel.musicbot;
  */
 
 public abstract class PreferenceKey {
-  public static String TOKEN = "bot_token";
+  public static final String TOKEN = "bot_token";
+  public static final String BOT_URL = "bot_url";
 
   private PreferenceKey() {
   }
