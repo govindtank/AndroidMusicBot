@@ -237,7 +237,14 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
   @Override
   public void onSongClick(Song song) {
-    ApiConnector.getService().queue(song).enqueue(new DummyCallback<String>());
+    ApiConnector.getService().queue(song).enqueue(new DummyCallback<String>() {
+      @Override
+      public void onResponse(Call<String> call, Response<String> response) {
+        if (response.code() == 401) {
+          logout();
+        }
+      }
+    });
     finish();
   }
 

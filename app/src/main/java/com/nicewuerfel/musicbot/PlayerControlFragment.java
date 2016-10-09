@@ -2,7 +2,9 @@ package com.nicewuerfel.musicbot;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -217,6 +219,10 @@ public class PlayerControlFragment extends Fragment {
         if (state != null) {
           BotState.getInstance().setPlayerState(state);
         }
+      } else if (response.code() == 401) {
+        PreferenceManager.getDefaultSharedPreferences(getContext()).edit().remove(PreferenceKey.TOKEN).apply();
+        Intent loginIntent = new Intent(getContext(), LoginActivity.class);
+        startActivity(loginIntent);
       }
     }
 
