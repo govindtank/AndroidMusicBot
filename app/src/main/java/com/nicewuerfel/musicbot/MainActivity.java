@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
           .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-              ApiConnector.getService().queue(song).enqueue(new DummyCallback<String>() {
+              ApiConnector.getService().enqueue(song).enqueue(new DummyCallback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
                   if (response.isSuccessful()) {

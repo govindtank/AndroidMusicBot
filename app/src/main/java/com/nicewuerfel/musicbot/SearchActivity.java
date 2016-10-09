@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -213,7 +212,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
   @Override
   public void onSongClick(Song song) {
-    ApiConnector.getService().queue(song).enqueue(new DummyCallback<String>() {
+    ApiConnector.getService().enqueue(song).enqueue(new DummyCallback<String>() {
       @Override
       public void onResponse(Call<String> call, Response<String> response) {
         if (response.code() == 401) {

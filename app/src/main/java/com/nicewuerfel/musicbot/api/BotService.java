@@ -78,7 +78,7 @@ public interface BotService {
    * @return an undefined string response
    */
   @PUT("queue")
-  Call<String> queue(@Body Song song);
+  Call<String> enqueue(@Body Song song);
 
   /**
    * Removes a song from the queue.
