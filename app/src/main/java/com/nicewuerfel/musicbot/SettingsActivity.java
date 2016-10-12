@@ -125,7 +125,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
           }
           Toast.makeText(SettingsActivity.this, getString(R.string.auto_detect_result, s), Toast.LENGTH_SHORT).show();
-          if (getIntent().hasExtra(EXTRA_AUTO_DETECT)) {
+          if (getIntent().hasExtra(EXTRA_AUTO_DETECT) && s != null) {
             onBackPressed();
           }
         }
