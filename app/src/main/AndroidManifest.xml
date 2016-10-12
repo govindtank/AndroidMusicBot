@@ -40,10 +40,10 @@
             android:label="@string/title_activity_settings">
         </activity>
         <activity
-            android:name=".AdminActivity"
+            android:name=".ui.activities.AdminActivity"
             android:label="@string/activity_admin_title">
         </activity>
-        <activity android:name=".EditPermissionsActivity">
+        <activity android:name=".ui.activities.EditPermissionsActivity">
         </activity>
     </application>
 
