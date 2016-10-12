@@ -54,6 +54,7 @@
     <string name="auto_detect">Auto detect host</string>
     <string name="auto_detect_result">Auto detection result: %s</string>
     <string name="auto_auto_detect">Auto detecting host...</string>
+    <string name="title_activity_edit_permissions">Edit permissions</string>
 
     <!-- Strings related to Settings -->
 

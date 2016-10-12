@@ -43,7 +43,12 @@
             android:name=".ui.activities.AdminActivity"
             android:label="@string/activity_admin_title">
         </activity>
-        <activity android:name=".ui.activities.EditPermissionsActivity">
+        <activity
+            android:name=".ui.activities.EditPermissionsActivity"
+            android:label="@string/title_activity_edit_permissions">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.activities.AdminActivity"/>
         </activity>
     </application>
 
