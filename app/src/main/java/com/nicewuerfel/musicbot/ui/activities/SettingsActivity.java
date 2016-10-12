@@ -115,6 +115,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
   @UiThread
   private void autoDetect() {
     if (detection == null || detection.getStatus() == AsyncTask.Status.FINISHED) {
+      final Toast startToast = Toast.makeText(this, R.string.auto_auto_detect, Toast.LENGTH_LONG);
+      startToast.show();
       detection = new AsyncTask<Void, Void, String>() {
         @Override
         protected String doInBackground(Void... params) {
@@ -144,6 +146,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
               prefs.edit().putString(preference.getKey(), s).apply();
             }
           }
+          startToast.cancel();
           Toast.makeText(SettingsActivity.this, getString(R.string.auto_detect_result, s), Toast.LENGTH_SHORT).show();
           if (getIntent().hasExtra(EXTRA_AUTO_DETECT) && s != null) {
             onBackPressed();
@@ -201,7 +204,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
       checkBoxPref.getOnPreferenceChangeListener().onPreferenceChange(checkBoxPref, prefs.getBoolean(checkBoxPref.getKey(), false));
 
       if (botHostPref.getText().trim().equals("localhost")) {
-        Toast.makeText(getActivity(), R.string.auto_auto_detect, Toast.LENGTH_SHORT).show();
         ((SettingsActivity) getActivity()).autoDetect();
       }
     }
