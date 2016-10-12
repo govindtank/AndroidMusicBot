@@ -58,6 +58,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
   @Override
   protected void onDestroy() {
     fragment = null;
+    if (detection != null && isFinishing()) {
+      detection.cancel(false);
+      detection = null;
+    }
     super.onDestroy();
   }
 
