@@ -12,16 +12,6 @@
         android:singleLine="true"
         android:title="@string/pref_title_server_host"/>
 
-    <EditTextPreference
-        android:capitalize="none"
-        android:defaultValue="@integer/bot_url_port"
-        android:inputType="number"
-        android:key="bot_url_port"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/pref_title_server_port"/>
-
     <CheckBoxPreference
         android:capitalize="none"
         android:defaultValue="@bool/bot_trust"

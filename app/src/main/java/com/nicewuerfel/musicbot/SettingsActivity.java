@@ -3,6 +3,7 @@ package com.nicewuerfel.musicbot;
 
 import android.annotation.TargetApi;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -11,9 +12,16 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v7.app.ActionBar;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -29,13 +37,28 @@ import java.net.URL;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+  public static final String EXTRA_AUTO_DETECT = "auto-detect";
+
+  private GeneralPreferenceFragment fragment;
+  @Nullable
+  private AsyncTask<Void, Void, String> detection;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setupActionBar();
+    fragment = new GeneralPreferenceFragment();
     getFragmentManager().beginTransaction()
-        .replace(android.R.id.content, new GeneralPreferenceFragment())
+        .replace(android.R.id.content, fragment)
         .commit();
+  }
+
+
+  @Override
+  protected void onDestroy() {
+    fragment = null;
+    super.onDestroy();
   }
 
   /**
@@ -50,12 +73,64 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
   }
 
   @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.settings_action_bar_menu, menu);
+    return true;
+  }
+
+  @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case android.R.id.home:
         super.onBackPressed();
+        return true;
+      case R.id.auto_detect:
+        autoDetect();
+        return true;
       default:
         return super.onOptionsItemSelected(item);
+    }
+  }
+
+  @UiThread
+  private void autoDetect() {
+    if (detection == null || detection.getStatus() == AsyncTask.Status.FINISHED) {
+      detection = new AsyncTask<Void, Void, String>() {
+        @Override
+        protected String doInBackground(Void... params) {
+          DatagramSocket socket = null;
+          try {
+            socket = new DatagramSocket(42945);
+            socket.setSoTimeout(4000);
+            byte[] buffer = new byte[128];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            return packet.getAddress().getHostAddress();
+          } catch (IOException e) {
+            return null;
+          } finally {
+            if (socket != null) {
+              socket.close();
+            }
+          }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+          if (fragment != null && s != null) {
+            Preference preference = fragment.findPreference(PreferenceKey.BOT_HOST);
+            if (preference.getOnPreferenceChangeListener().onPreferenceChange(preference, s)) {
+              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
+              prefs.edit().putString(preference.getKey(), s).apply();
+            }
+          }
+          Toast.makeText(SettingsActivity.this, getString(R.string.auto_detect_result, s), Toast.LENGTH_SHORT).show();
+          if (getIntent().hasExtra(EXTRA_AUTO_DETECT)) {
+            onBackPressed();
+          }
+        }
+      };
+      detection.execute();
     }
   }
 
@@ -77,15 +152,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
       // to their values. When their values change, their summaries are
       // updated to reflect the new value, per the Android Design
       // guidelines.
-      final EditTextPreference botHostPref = (EditTextPreference) findPreference("bot_url_host");
-      final EditTextPreference botPortPref = (EditTextPreference) findPreference("bot_url_port");
+      final EditTextPreference botHostPref = (EditTextPreference) findPreference(PreferenceKey.BOT_HOST);
 
       botHostPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
           String stringValue = newValue.toString().trim();
           try {
-            URL url = new URL("https", stringValue, Integer.parseInt(botPortPref.getText()), "");
+            URL url = new URL("https", stringValue, 8443, "");
             prefs.edit().putString(PreferenceKey.BOT_URL, url.toExternalForm()).apply();
             botHostPref.setSummary(stringValue);
             return true;
@@ -95,25 +169,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
           }
         }
       });
-
-      botPortPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-          String stringValue = newValue.toString().trim();
-          try {
-            URL url = new URL("https", botHostPref.getText(), Integer.parseInt(stringValue), "");
-            prefs.edit().putString(PreferenceKey.BOT_URL, url.toExternalForm()).apply();
-            botPortPref.setSummary(stringValue);
-            return true;
-          } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return false;
-          }
-        }
-      });
-
       botHostPref.getOnPreferenceChangeListener().onPreferenceChange(botHostPref, prefs.getString(botHostPref.getKey(), null));
-      botPortPref.getOnPreferenceChangeListener().onPreferenceChange(botHostPref, prefs.getString(botPortPref.getKey(), null));
 
       CheckBoxPreference checkBoxPref = (CheckBoxPreference) findPreference("bot_trust");
       checkBoxPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -123,6 +179,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
       });
       checkBoxPref.getOnPreferenceChangeListener().onPreferenceChange(checkBoxPref, prefs.getBoolean(checkBoxPref.getKey(), false));
+
+      if (botHostPref.getText().trim().equals("localhost")) {
+        Toast.makeText(getActivity(), R.string.auto_auto_detect, Toast.LENGTH_SHORT).show();
+        ((SettingsActivity) getActivity()).autoDetect();
+      }
     }
   }
 }

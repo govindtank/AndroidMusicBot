@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
     setContentView(R.layout.activity_login);
 
     ActionBar actionBar = getSupportActionBar();
-    if(actionBar != null) {
+    if (actionBar != null) {
       actionBar.setDisplayHomeAsUpEnabled(false);
     }
 
@@ -118,6 +118,11 @@ public class LoginActivity extends AppCompatActivity {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     if (prefs.getString("bot_token", null) != null) {
       finish();
+    }
+    if (prefs.getString(PreferenceKey.BOT_HOST, "localhost").trim().equals("localhost")) {
+      Intent intent = new Intent(this, SettingsActivity.class);
+      intent.putExtra(SettingsActivity.EXTRA_AUTO_DETECT, true);
+      startActivity(intent);
     }
   }
 

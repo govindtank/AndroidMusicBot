@@ -51,6 +51,9 @@
     <string name="unsuccessful_refresh">Unsuccessful refresh</string>
     <string name="refresh_success">Refresh successful</string>
     <string name="queue_last_played">Enqueue %s again?</string>
+    <string name="auto_detect">Auto detect host</string>
+    <string name="auto_detect_result">Auto detection result: %s</string>
+    <string name="auto_auto_detect">Auto detecting host...</string>
 
     <!-- Strings related to Settings -->
 
