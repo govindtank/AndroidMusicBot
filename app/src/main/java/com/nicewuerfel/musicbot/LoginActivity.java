@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -53,6 +54,12 @@ public class LoginActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
+
+    ActionBar actionBar = getSupportActionBar();
+    if(actionBar != null) {
+      actionBar.setDisplayHomeAsUpEnabled(false);
+    }
+
     // Set up the login form.
     mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
 
