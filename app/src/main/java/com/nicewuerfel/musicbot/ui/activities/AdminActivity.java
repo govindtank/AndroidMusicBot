@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.DummyCallback;

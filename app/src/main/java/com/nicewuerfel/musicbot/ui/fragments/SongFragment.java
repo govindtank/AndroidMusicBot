@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mobeta.android.dslv.DragSortListView;
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MoveRequestBody;

@@ -11,5 +11,5 @@
     app:drag_handle_id="@id/drag_handle"
     app:float_alpha="0.6"
     app:layoutManager="LinearLayoutManager"
-    tools:context="com.nicewuerfel.musicbot.SongFragment"
+    tools:context=".ui.fragments.SongFragment"
     tools:listitem="@layout/fragment_song"/>

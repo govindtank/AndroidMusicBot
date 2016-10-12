@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.fragments;
 
 
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.nicewuerfel.musicbot.R;
 
 import retrofit2.Call;
 import retrofit2.Callback;

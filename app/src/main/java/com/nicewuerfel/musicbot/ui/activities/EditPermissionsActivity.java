@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.activities;
 
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -9,9 +9,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.Permission;
+import com.nicewuerfel.musicbot.ui.fragments.ConnectionErrorFragment;
+import com.nicewuerfel.musicbot.ui.fragments.LoadingFragment;
+import com.nicewuerfel.musicbot.ui.fragments.PermissionFragment;
+import com.nicewuerfel.musicbot.ui.fragments.UserFragment;
 
 import java.util.ArrayList;
 import java.util.List;

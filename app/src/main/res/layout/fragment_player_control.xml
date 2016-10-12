@@ -4,7 +4,7 @@
               android:layout_height="wrap_content"
               android:background="@color/colorPrimary"
               android:orientation="horizontal"
-              tools:context="com.nicewuerfel.musicbot.PlayerControlFragment">
+              tools:context=".ui.fragments.PlayerControlFragment">
 
 
     <ImageView

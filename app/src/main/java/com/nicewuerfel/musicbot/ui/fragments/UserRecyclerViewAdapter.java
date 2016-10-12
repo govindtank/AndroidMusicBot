@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.fragments;
 
 import android.content.res.Resources;
 import android.support.v7.app.AlertDialog;
@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiUser;
 
 import java.util.List;
@@ -18,12 +19,12 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link ApiUser} and makes a call to the
  * specified {@link UserFragment.OnListFragmentInteractionListener}.
  */
-public class ApiUserRecyclerViewAdapter extends RecyclerView.Adapter<ApiUserRecyclerViewAdapter.ViewHolder> {
+class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerViewAdapter.ViewHolder> {
 
   private final List<ApiUser> mValues;
   private final UserFragment.OnListFragmentInteractionListener mListener;
 
-  public ApiUserRecyclerViewAdapter(List<ApiUser> items, UserFragment.OnListFragmentInteractionListener listener) {
+  public UserRecyclerViewAdapter(List<ApiUser> items, UserFragment.OnListFragmentInteractionListener listener) {
     mValues = items;
     mListener = listener;
   }

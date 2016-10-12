@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.fragments;
 
 
 import android.content.Context;
@@ -13,10 +13,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nicewuerfel.musicbot.PreferenceKey;
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
+import com.nicewuerfel.musicbot.ui.activities.LoginActivity;
 
 import java.io.IOException;
 import java.util.Observable;

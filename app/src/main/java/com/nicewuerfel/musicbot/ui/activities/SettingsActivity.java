@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.activities;
 
 
 import android.annotation.TargetApi;
@@ -20,6 +20,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.nicewuerfel.musicbot.PreferenceKey;
+import com.nicewuerfel.musicbot.R;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

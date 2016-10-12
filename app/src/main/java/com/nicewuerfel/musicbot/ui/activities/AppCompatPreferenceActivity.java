@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.activities;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

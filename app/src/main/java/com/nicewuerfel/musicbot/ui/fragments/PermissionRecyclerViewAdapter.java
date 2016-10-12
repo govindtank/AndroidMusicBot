@@ -1,4 +1,4 @@
-package com.nicewuerfel.musicbot;
+package com.nicewuerfel.musicbot.ui.fragments;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,7 +8,7 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.nicewuerfel.musicbot.PermissionFragment.OnListFragmentInteractionListener;
+import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.Permission;
 
@@ -16,15 +16,15 @@ import java.util.List;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Permission} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
+ * specified {@link PermissionFragment.OnListFragmentInteractionListener}.
  */
-public class PermissionRecyclerViewAdapter extends RecyclerView.Adapter<PermissionRecyclerViewAdapter.ViewHolder> {
+class PermissionRecyclerViewAdapter extends RecyclerView.Adapter<PermissionRecyclerViewAdapter.ViewHolder> {
 
   private final ApiUser mUser;
   private final List<Permission> mValues;
-  private final OnListFragmentInteractionListener mListener;
+  private final PermissionFragment.OnListFragmentInteractionListener mListener;
 
-  public PermissionRecyclerViewAdapter(ApiUser user, List<Permission> items, OnListFragmentInteractionListener listener) {
+  public PermissionRecyclerViewAdapter(ApiUser user, List<Permission> items, PermissionFragment.OnListFragmentInteractionListener listener) {
     mUser = user;
     mValues = items;
     mListener = listener;

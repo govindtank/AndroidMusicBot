@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.nicewuerfel.musicbot.SearchActivity">
+    tools:context=".ui.activities.SearchActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
