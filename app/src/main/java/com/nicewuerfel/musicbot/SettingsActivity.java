@@ -14,9 +14,11 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -52,8 +54,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     getFragmentManager().beginTransaction()
         .replace(android.R.id.content, fragment)
         .commit();
+    getFragmentManager().executePendingTransactions();
   }
 
+  @Override
+  protected void onStart() {
+    super.onStart();
+    if (!getIntent().hasExtra(EXTRA_AUTO_DETECT)) {
+      View view = findViewById(android.R.id.content);
+      if (view != null) {
+        Snackbar.make(view, "Press the refresh button to auto-detect the bot IP", Snackbar.LENGTH_INDEFINITE).show();
+      }
+    }
+  }
 
   @Override
   protected void onDestroy() {
