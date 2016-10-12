@@ -182,7 +182,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
           String stringValue = newValue.toString().trim();
           try {
-            URL url = new URL("https", stringValue, 8443, "");
+            URL url = new URL("https", stringValue, 8443, "v1/");
             prefs.edit().putString(PreferenceKey.BOT_URL, url.toExternalForm()).apply();
             botHostPref.setSummary(stringValue);
             return true;
