@@ -21,10 +21,6 @@ import retrofit2.Response;
 public final class BotState {
   private static final BotState instance = new BotState();
 
-  private final Observable playerStateObservable;
-  private final Observable hasAdminObservable;
-  private final Observable musicApisObservable;
-
   @NonNull
   private PlayerState playerState;
   private boolean hasAdmin;
@@ -33,47 +29,50 @@ public final class BotState {
 
   private final Handler handler;
 
-  private final Runnable notifyPlayerState;
-  private final Runnable notifyHasAdmin;
-  private final Runnable notifyMusicApis;
-
   private final ScheduledExecutorService executor;
 
   private enum Index {
     PLAYER_STATE, HAS_ADMIN, MUSIC_APIS
   }
 
-  private final ScheduledFuture[] futures = new ScheduledFuture[3];
+  private final ScheduledFuture[] futures;
+  private final Observable[] observables;
+  private final Runnable[] notifiers;
 
 
   private BotState() {
-    this.playerStateObservable = new Observable();
-    this.hasAdminObservable = new Observable();
-    this.musicApisObservable = new Observable();
+    observables = new Observable[Index.values().length];
+    for (Index index : Index.values()) {
+      observables[index.ordinal()] = new Observable();
+    }
 
     playerState = PlayerState.EMPTY;
     hasAdmin = true;
     apis = Collections.emptyList();
 
     this.handler = new Handler(Looper.getMainLooper());
-    this.notifyPlayerState = new Runnable() {
+
+    notifiers = new Runnable[Index.values().length];
+    notifiers[Index.PLAYER_STATE.ordinal()] = new Runnable() {
       @Override
       public void run() {
-        playerStateObservable.notifyObservers(playerState);
+        observables[Index.PLAYER_STATE.ordinal()].notifyObservers(playerState);
       }
     };
-    this.notifyHasAdmin = new Runnable() {
+    notifiers[Index.HAS_ADMIN.ordinal()] = new Runnable() {
       @Override
       public void run() {
-        hasAdminObservable.notifyObservers(hasAdmin);
+        observables[Index.HAS_ADMIN.ordinal()].notifyObservers(hasAdmin);
       }
     };
-    this.notifyMusicApis = new Runnable() {
+    notifiers[Index.MUSIC_APIS.ordinal()] = new Runnable() {
       @Override
       public void run() {
-        musicApisObservable.notifyObservers(apis);
+        observables[Index.MUSIC_APIS.ordinal()].notifyObservers(apis);
       }
     };
+
+    futures = new ScheduledFuture[Index.values().length];
     executor = Executors.newScheduledThreadPool(3);
   }
 
@@ -82,10 +81,10 @@ public final class BotState {
   }
 
   public void resetObservers() {
-    playerStateObservable.deleteObservers();
-    hasAdminObservable.deleteObservers();
-    musicApisObservable.deleteObservers();
     synchronized (futures) {
+      for (Observable observable : observables) {
+        observable.deleteObservers();
+      }
       for (ScheduledFuture future : futures) {
         if (future != null) {
           future.cancel(true);
@@ -148,14 +147,15 @@ public final class BotState {
    * @param observer the observer
    */
   public void addPlayerStateObserver(@Nullable Observer observer) {
-    playerStateObservable.addObserver(observer);
+    observables[Index.PLAYER_STATE.ordinal()].addObserver(observer);
     scheduleUpdater(Index.PLAYER_STATE, ApiConnector.getService().getPlayerState());
   }
 
   public synchronized void deletePlayerStateObserver(@Nullable Observer observer) {
     synchronized (futures) {
-      playerStateObservable.deleteObserver(observer);
-      if (playerStateObservable.countObservers() == 0) {
+      Observable observable = observables[Index.PLAYER_STATE.ordinal()];
+      observable.deleteObserver(observer);
+      if (observable.countObservers() == 0) {
         cancelUpdater(Index.PLAYER_STATE);
       }
     }
@@ -168,14 +168,15 @@ public final class BotState {
    * @param observer the observer
    */
   public void addHasAdminObserver(@Nullable Observer observer) {
-    hasAdminObservable.addObserver(observer);
+    observables[Index.HAS_ADMIN.ordinal()].addObserver(observer);
     scheduleUpdater(Index.HAS_ADMIN, ApiConnector.getService().hasAdmin());
   }
 
   public void deleteHasAdminObserver(@Nullable Observer observer) {
     synchronized (futures) {
-      hasAdminObservable.deleteObserver(observer);
-      if (hasAdminObservable.countObservers() == 0) {
+      Observable observable = observables[Index.HAS_ADMIN.ordinal()];
+      observable.deleteObserver(observer);
+      if (observable.countObservers() == 0) {
         cancelUpdater(Index.HAS_ADMIN);
       }
     }
@@ -188,14 +189,15 @@ public final class BotState {
    * @param observer the observer
    */
   public void addMusicApisObserver(@Nullable Observer observer) {
-    musicApisObservable.addObserver(observer);
+    observables[Index.MUSIC_APIS.ordinal()].addObserver(observer);
     scheduleUpdater(Index.MUSIC_APIS, ApiConnector.getService().getMusicApis());
   }
 
   public void deleteMusicApisObserver(@Nullable Observer observer) {
     synchronized (futures) {
-      musicApisObservable.deleteObserver(observer);
-      if (musicApisObservable.countObservers() == 0) {
+      Observable observable = observables[Index.MUSIC_APIS.ordinal()];
+      observable.deleteObserver(observer);
+      if (observable.countObservers() == 0) {
         cancelUpdater(Index.MUSIC_APIS);
       }
     }
@@ -207,10 +209,11 @@ public final class BotState {
   }
 
   public void setPlayerState(@NonNull PlayerState playerState) {
-    synchronized (playerStateObservable) {
+    int index = Index.PLAYER_STATE.ordinal();
+    synchronized (observables[index]) {
       if (!this.playerState.equals(playerState)) {
         this.playerState = playerState;
-        handler.post(notifyPlayerState);
+        handler.post(notifiers[index]);
       }
     }
   }
@@ -220,10 +223,11 @@ public final class BotState {
   }
 
   public void hasAdmin(boolean hasAdmin) {
-    synchronized (hasAdminObservable) {
+    int index = Index.HAS_ADMIN.ordinal();
+    synchronized (observables[index]) {
       if (this.hasAdmin != hasAdmin) {
         this.hasAdmin = hasAdmin;
-        handler.post(notifyHasAdmin);
+        handler.post(notifiers[index]);
       }
     }
   }
@@ -234,10 +238,11 @@ public final class BotState {
   }
 
   public void setMusicApis(@NonNull List<MusicApi> apis) {
-    synchronized (musicApisObservable) {
+    int index = Index.MUSIC_APIS.ordinal();
+    synchronized (observables[index]) {
       if (!this.apis.equals(apis)) {
         this.apis = apis;
-        handler.post(notifyMusicApis);
+        handler.post(notifiers[index]);
       }
     }
   }
@@ -266,6 +271,7 @@ public final class BotState {
     public void onResponse(Call<Boolean> call, Response<Boolean> response) {
       if (response.isSuccessful()) {
         Boolean hasAdmin = response.body();
+
         if (hasAdmin != null) {
           BotState.getInstance().hasAdmin(hasAdmin);
         }
