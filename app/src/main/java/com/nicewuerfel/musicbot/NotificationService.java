@@ -146,7 +146,7 @@ public class NotificationService extends Service {
             .setContentInfo(getString(R.string.app_name))
             .setContentTitle(song.getTitle())
             .setContentText(song.getDescription())
-            .setSmallIcon(R.drawable.ic_library_music_white)
+            .setSmallIcon(R.drawable.ic_library_music)
             .setLargeIcon(albumArt)
             .setContentIntent(mainIntent)
             .setDeleteIntent(pendingStop)
