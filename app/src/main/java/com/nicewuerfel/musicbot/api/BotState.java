@@ -93,7 +93,7 @@ public final class BotState {
     }
   }
 
-  private <T> void scheduleUpdater(final Index index, final Call<T> call) {
+  private void scheduleUpdater(final Index index, final Call<?> call) {
     synchronized (futures) {
       Future future = futures[index.ordinal()];
       if (future != null) {
@@ -106,9 +106,9 @@ public final class BotState {
         @SuppressWarnings("unchecked")
         public void run() {
           try {
-            Response<T> response = call.execute();
+            Response<?> response = call.execute();
             if (response.isSuccessful()) {
-              T body = response.body();
+              Object body = response.body();
               if (body != null) {
                 switch (index) {
                   case PLAYER_STATE:
