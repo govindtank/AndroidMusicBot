@@ -39,6 +39,7 @@ public class PlayerControlFragment extends Fragment {
   private OnListFragmentInteractionListener mListener;
   private Observer playerStateObserver;
 
+  private Song song;
   private ImageButton pauseButton;
   private TextView songTitleText;
   private TextView songDescriptionText;
@@ -136,6 +137,7 @@ public class PlayerControlFragment extends Fragment {
 
   @Override
   public void onDestroyView() {
+    song = null;
     pauseButton = null;
     songTitleText = null;
     songDescriptionText = null;
@@ -172,9 +174,13 @@ public class PlayerControlFragment extends Fragment {
       }
       songDurationText.setText(song.getDuration());
 
-      songAlbumArt.setVisibility(View.GONE);
-      AlbumArtLoader.getInstance(getContext()).display(song, songAlbumArt, true);
+      if (!state.getCurrentSong().equals(this.song)) {
+        songAlbumArt.setVisibility(View.GONE);
+        AlbumArtLoader.getInstance(getContext()).display(song, songAlbumArt, true);
+      }
     }
+
+    this.song = state.getCurrentSong();
   }
 
   public interface OnListFragmentInteractionListener {
