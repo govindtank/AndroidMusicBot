@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.nicewuerfel.musicbot.PreferenceKey;
 import com.nicewuerfel.musicbot.R;
+import com.nicewuerfel.musicbot.api.AlbumArtLoader;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.PlayerState;
@@ -171,7 +172,8 @@ public class PlayerControlFragment extends Fragment {
       }
       songDurationText.setText(song.getDuration());
 
-      ApiConnector.displayAlbumArt(song, songAlbumArt, true);
+      songAlbumArt.setVisibility(View.GONE);
+      AlbumArtLoader.getInstance(getContext()).display(song, songAlbumArt, true);
     }
   }
 

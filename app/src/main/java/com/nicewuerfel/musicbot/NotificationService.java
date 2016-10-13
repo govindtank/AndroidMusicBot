@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import com.nicewuerfel.musicbot.api.AlbumArtLoader;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.BotService;
 import com.nicewuerfel.musicbot.api.BotState;
@@ -32,6 +33,7 @@ public class NotificationService extends Service {
   private static final String ACTION_STOP = "com.nicewuerfel.musicbot.STOP";
 
   private final Observer stateObserver;
+  private PlayerState state = PlayerState.EMPTY;
 
   protected NotificationService() {
     stateObserver = new Observer() {
@@ -90,8 +92,13 @@ public class NotificationService extends Service {
   }
 
   private void showNotification(@NonNull PlayerState state) {
+    if (state.getCurrentSong().equals(this.state.getCurrentSong()) && state.isPaused() == this.state.isPaused()) {
+      Log.d(LOG_TAG, "SAME");
+      return;
+    }
+    this.state = state;
     showNotification(state, null);
-    ApiConnector.loadAlbumArt(this, state.getCurrentSong(), new ImageLoadingListener() {
+    AlbumArtLoader.getInstance(this).load(state.getCurrentSong(), new AlbumArtLoader.ImageLoadingListener() {
       @Override
       public void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap) {
         if (bitmap == null) {
@@ -106,6 +113,7 @@ public class NotificationService extends Service {
   }
 
   private void showNotification(@NonNull PlayerState state, @Nullable Bitmap albumArt) {
+    Log.d(LOG_TAG, "SHOW FULL for " + state.getCurrentSong() + " with bitmap: " + (albumArt != null));
     Song song = state.getCurrentSong();
 
     PendingIntent mainIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);

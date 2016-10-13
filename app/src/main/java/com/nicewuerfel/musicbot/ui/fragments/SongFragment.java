@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.mobeta.android.dslv.DragSortListView;
 import com.nicewuerfel.musicbot.R;
+import com.nicewuerfel.musicbot.api.AlbumArtLoader;
 import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MoveRequestBody;
@@ -258,7 +259,7 @@ public class SongFragment extends Fragment {
 
       final ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
       albumView.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-      ApiConnector.displayAlbumArt(song, albumView, false);
+      AlbumArtLoader.getInstance(getContext()).display(song, albumView, false);
 
       TextView titleText = (TextView) view.findViewById(R.id.song_title);
       titleText.setText(song.getTitle());
