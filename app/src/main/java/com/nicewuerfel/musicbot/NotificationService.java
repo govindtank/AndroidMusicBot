@@ -35,7 +35,7 @@ public class NotificationService extends Service {
   private final Observer stateObserver;
   private PlayerState state = PlayerState.EMPTY;
 
-  protected NotificationService() {
+  public NotificationService() {
     stateObserver = new Observer() {
       @Override
       public void update(Observable observable, Object o) {
