@@ -60,7 +60,6 @@ public class NotificationService extends Service {
   public int onStartCommand(Intent intent, int flags, int startId) {
     switch (intent.getAction()) {
       case ACTION_START:
-        Log.d(LOG_TAG, "STARTING SERVICE");
         showNotification(BotState.getInstance().getPlayerState());
         if (startId == 1) {
           registerObservers();
@@ -93,7 +92,6 @@ public class NotificationService extends Service {
 
   private void showNotification(@NonNull PlayerState state) {
     if (state.getCurrentSong().equals(this.state.getCurrentSong()) && state.isPaused() == this.state.isPaused()) {
-      Log.d(LOG_TAG, "SAME");
       return;
     }
     this.state = state;
@@ -113,7 +111,6 @@ public class NotificationService extends Service {
   }
 
   private void showNotification(@NonNull PlayerState state, @Nullable Bitmap albumArt) {
-    Log.d(LOG_TAG, "SHOW FULL for " + state.getCurrentSong() + " with bitmap: " + (albumArt != null));
     Song song = state.getCurrentSong();
 
     PendingIntent mainIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
