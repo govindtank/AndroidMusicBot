@@ -46,7 +46,7 @@
     <string name="show_permissions">Show %d permissions</string>
     <string name="user_permissions">%s\'s permissions</string>
     <string name="pref_title_server_port">Server port</string>
-    <string name="pref_default_server_url">https://localhost:8443</string>
+    <string name="pref_default_server_url">https://localhost:8443/v1/</string>
     <string name="enqueued_by">Enqueued by %s</string>
     <string name="unsuccessful_refresh">Unsuccessful refresh</string>
     <string name="refresh_success">Refresh successful</string>
