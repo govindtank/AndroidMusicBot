@@ -21,13 +21,8 @@ import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nicewuerfel.musicbot.ui.activities.LoginActivity;
 
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -41,7 +36,6 @@ import retrofit2.Response;
 public class PlayerControlFragment extends Fragment {
 
   private OnListFragmentInteractionListener mListener;
-  private ScheduledExecutorService executor;
   private Observer playerStateObserver;
 
   private ImageButton pauseButton;
@@ -49,7 +43,6 @@ public class PlayerControlFragment extends Fragment {
   private TextView songDescriptionText;
   private TextView songDurationText;
   private ImageView songAlbumArt;
-  private ScheduledFuture<?> refreshTask;
 
   public PlayerControlFragment() {
     // Required empty public constructor
@@ -125,44 +118,12 @@ public class PlayerControlFragment extends Fragment {
   public void onStart() {
     super.onStart();
     BotState.getInstance().addPlayerStateObserver(playerStateObserver);
-    executor = Executors.newSingleThreadScheduledExecutor();
     onPlayerStateUpdate(BotState.getInstance().getPlayerState());
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-    refreshTask = executor.scheduleWithFixedDelay(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Response<PlayerState> response = ApiConnector.getService().getPlayerState().execute();
-          if (response.isSuccessful()) {
-            PlayerState state = response.body();
-            if (state != null) {
-              BotState.getInstance().setPlayerState(state);
-            }
-          }
-        } catch (IOException e) {
-        }
-      }
-    }, 0L, 5L, TimeUnit.SECONDS);
-  }
-
-  @Override
-  public void onPause() {
-    if (refreshTask != null) {
-      refreshTask.cancel(false);
-    }
-    super.onPause();
   }
 
   @Override
   public void onStop() {
     BotState.getInstance().deletePlayerStateObserver(playerStateObserver);
-    refreshTask = null;
-    executor.shutdownNow();
-    executor = null;
     super.onStop();
   }
 
@@ -202,19 +163,15 @@ public class PlayerControlFragment extends Fragment {
     if (pauseButton != null && songTitleText != null && songDescriptionText != null && songDurationText != null) {
       pauseButton.setImageResource(drawableResource);
       Song song = state.getCurrentSong();
-      if (song != null) {
-        if (!songTitleText.getText().equals(song.getTitle())) {
-          songTitleText.setText(song.getTitle());
-        }
-        if (!songDescriptionText.getText().equals(song.getDescription())) {
-          songDescriptionText.setText(song.getDescription());
-        }
-        songDurationText.setText(song.getDuration());
-
-        ApiConnector.displayAlbumArt(song, songAlbumArt, true);
-
-        // TODO hide if not present
+      if (!songTitleText.getText().equals(song.getTitle())) {
+        songTitleText.setText(song.getTitle());
       }
+      if (!songDescriptionText.getText().equals(song.getDescription())) {
+        songDescriptionText.setText(song.getDescription());
+      }
+      songDurationText.setText(song.getDuration());
+
+      ApiConnector.displayAlbumArt(song, songAlbumArt, true);
     }
   }
 

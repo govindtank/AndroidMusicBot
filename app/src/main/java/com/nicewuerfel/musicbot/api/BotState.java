@@ -5,9 +5,15 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -30,6 +36,14 @@ public final class BotState {
   private final Runnable notifyPlayerState;
   private final Runnable notifyHasAdmin;
   private final Runnable notifyMusicApis;
+
+  private final ScheduledExecutorService executor;
+
+  private enum Index {
+    PLAYER_STATE, HAS_ADMIN, MUSIC_APIS
+  }
+
+  private final ScheduledFuture[] futures = new ScheduledFuture[3];
 
 
   private BotState() {
@@ -60,6 +74,7 @@ public final class BotState {
         musicApisObservable.notifyObservers(apis);
       }
     };
+    executor = Executors.newScheduledThreadPool(3);
   }
 
   public static BotState getInstance() {
@@ -70,6 +85,60 @@ public final class BotState {
     playerStateObservable.deleteObservers();
     hasAdminObservable.deleteObservers();
     musicApisObservable.deleteObservers();
+    synchronized (futures) {
+      for (ScheduledFuture future : futures) {
+        if (future != null) {
+          future.cancel(true);
+        }
+      }
+    }
+  }
+
+  private <T> void scheduleUpdater(final Index index, final Call<T> call) {
+    synchronized (futures) {
+      Future future = futures[index.ordinal()];
+      if (future != null) {
+        if (!future.isDone()) {
+          return;
+        }
+      }
+      futures[index.ordinal()] = executor.scheduleWithFixedDelay(new Runnable() {
+        @Override
+        @SuppressWarnings("unchecked")
+        public void run() {
+          try {
+            Response<T> response = call.execute();
+            if (response.isSuccessful()) {
+              T body = response.body();
+              if (body != null) {
+                switch (index) {
+                  case PLAYER_STATE:
+                    setPlayerState((PlayerState) body);
+                    break;
+                  case HAS_ADMIN:
+                    hasAdmin((Boolean) body);
+                    break;
+                  case MUSIC_APIS:
+                    setMusicApis((List<MusicApi>) body);
+                    break;
+                }
+              }
+            }
+          } catch (IOException ignore) {
+          }
+        }
+      }, 1, 3, TimeUnit.SECONDS);
+    }
+  }
+
+  private void cancelUpdater(Index index) {
+    synchronized (futures) {
+      Future future = futures[index.ordinal()];
+      if (future != null) {
+        future.cancel(true);
+        futures[index.ordinal()] = null;
+      }
+    }
   }
 
   /**
@@ -80,10 +149,16 @@ public final class BotState {
    */
   public void addPlayerStateObserver(@Nullable Observer observer) {
     playerStateObservable.addObserver(observer);
+    scheduleUpdater(Index.PLAYER_STATE, ApiConnector.getService().getPlayerState());
   }
 
-  public void deletePlayerStateObserver(@Nullable Observer observer) {
-    playerStateObservable.deleteObserver(observer);
+  public synchronized void deletePlayerStateObserver(@Nullable Observer observer) {
+    synchronized (futures) {
+      playerStateObservable.deleteObserver(observer);
+      if (playerStateObservable.countObservers() == 0) {
+        cancelUpdater(Index.PLAYER_STATE);
+      }
+    }
   }
 
   /**
@@ -94,10 +169,16 @@ public final class BotState {
    */
   public void addHasAdminObserver(@Nullable Observer observer) {
     hasAdminObservable.addObserver(observer);
+    scheduleUpdater(Index.HAS_ADMIN, ApiConnector.getService().hasAdmin());
   }
 
   public void deleteHasAdminObserver(@Nullable Observer observer) {
-    hasAdminObservable.deleteObserver(observer);
+    synchronized (futures) {
+      hasAdminObservable.deleteObserver(observer);
+      if (hasAdminObservable.countObservers() == 0) {
+        cancelUpdater(Index.HAS_ADMIN);
+      }
+    }
   }
 
   /**
@@ -108,10 +189,16 @@ public final class BotState {
    */
   public void addMusicApisObserver(@Nullable Observer observer) {
     musicApisObservable.addObserver(observer);
+    scheduleUpdater(Index.MUSIC_APIS, ApiConnector.getService().getMusicApis());
   }
 
   public void deleteMusicApisObserver(@Nullable Observer observer) {
-    musicApisObservable.deleteObserver(observer);
+    synchronized (futures) {
+      musicApisObservable.deleteObserver(observer);
+      if (musicApisObservable.countObservers() == 0) {
+        cancelUpdater(Index.MUSIC_APIS);
+      }
+    }
   }
 
   @NonNull
@@ -119,7 +206,7 @@ public final class BotState {
     return playerState;
   }
 
-  public void setPlayerState(@Nullable PlayerState playerState) {
+  public void setPlayerState(@NonNull PlayerState playerState) {
     synchronized (playerStateObservable) {
       if (!this.playerState.equals(playerState)) {
         this.playerState = playerState;
@@ -141,11 +228,12 @@ public final class BotState {
     }
   }
 
+  @NonNull
   public List<MusicApi> getMusicApis() {
     return apis;
   }
 
-  public void setMusicApis(List<MusicApi> apis) {
+  public void setMusicApis(@NonNull List<MusicApi> apis) {
     synchronized (musicApisObservable) {
       if (!this.apis.equals(apis)) {
         this.apis = apis;
