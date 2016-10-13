@@ -106,7 +106,7 @@ public final class BotState {
         @SuppressWarnings("unchecked")
         public void run() {
           try {
-            Response<?> response = call.execute();
+            Response<?> response = call.clone().execute();
             if (response.isSuccessful()) {
               Object body = response.body();
               if (body != null) {
