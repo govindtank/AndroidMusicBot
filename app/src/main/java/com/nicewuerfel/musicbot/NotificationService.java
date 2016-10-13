@@ -33,7 +33,10 @@ public class NotificationService extends Service {
   private static final String ACTION_STOP = "com.nicewuerfel.musicbot.STOP";
 
   private final Observer stateObserver;
+  @NonNull
   private PlayerState state = PlayerState.EMPTY;
+  @Nullable
+  private Bitmap bitmap = null;
 
   public NotificationService() {
     stateObserver = new Observer() {
@@ -91,27 +94,33 @@ public class NotificationService extends Service {
   }
 
   private void showNotification(@NonNull PlayerState state) {
-    if (state.getCurrentSong().equals(this.state.getCurrentSong()) && state.isPaused() == this.state.isPaused()) {
+    boolean sameSong = false;
+    if ((sameSong = state.getCurrentSong().equals(this.state.getCurrentSong())) && state.isPaused() == this.state.isPaused()) {
       return;
     }
     this.state = state;
-    showNotification(state, null);
-    AlbumArtLoader.getInstance(this).load(state.getCurrentSong(), new AlbumArtLoader.ImageLoadingListener() {
-      @Override
-      public void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap) {
-        if (bitmap == null) {
-          return;
+    if (sameSong) {
+      showNotification(state, bitmap);
+    } else {
+      showNotification(state, null);
+      AlbumArtLoader.getInstance(this).load(state.getCurrentSong(), new AlbumArtLoader.ImageLoadingListener() {
+        @Override
+        public void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap) {
+          if (bitmap == null) {
+            return;
+          }
+          PlayerState currentState = BotState.getInstance().getPlayerState();
+          if (song.equals(currentState.getCurrentSong())) {
+            showNotification(currentState, bitmap);
+          }
         }
-        PlayerState currentState = BotState.getInstance().getPlayerState();
-        if (song.equals(currentState.getCurrentSong())) {
-          showNotification(currentState, bitmap);
-        }
-      }
-    });
+      });
+    }
   }
 
   private void showNotification(@NonNull PlayerState state, @Nullable Bitmap albumArt) {
     Song song = state.getCurrentSong();
+    this.bitmap = albumArt;
 
     PendingIntent mainIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
