@@ -10,7 +10,7 @@ import java.util.List;
 
 public final class PlayerState implements Parcelable {
 
-  public static final PlayerState EMPTY = new PlayerState(null, Collections.<Song>emptyList(), Collections.<Song>emptyList(), false);
+  public static final PlayerState EMPTY = new PlayerState();
 
   @Nullable
   private final Song current_song;
@@ -20,17 +20,11 @@ public final class PlayerState implements Parcelable {
   private final List<Song> queue;
   private final boolean paused;
 
-  private PlayerState(@Nullable Song current_song, @NonNull List<Song> last_played, @NonNull List<Song> queue, boolean paused) {
-    this.current_song = current_song;
-    if (last_played == null) {
-      throw new NullPointerException("last_played is null");
-    }
-    this.last_played = last_played;
-    if (queue == null) {
-      throw new NullPointerException("queue is null");
-    }
-    this.queue = queue;
-    this.paused = paused;
+  private PlayerState() {
+    this.current_song = Song.UNKNOWN;
+    this.last_played = Collections.<Song>emptyList();
+    this.queue = Collections.<Song>emptyList();
+    this.paused = false;
   }
 
   protected PlayerState(Parcel in) {
@@ -52,9 +46,9 @@ public final class PlayerState implements Parcelable {
     }
   };
 
-  @Nullable
+  @NonNull
   public Song getCurrentSong() {
-    return current_song;
+    return current_song == null ? Song.UNKNOWN : current_song;
   }
 
   @NonNull

@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.nicewuerfel.musicbot.NotificationService;
 import com.nicewuerfel.musicbot.PreferenceKey;
 import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
@@ -148,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     if (menuObserver != null) {
       botState.addHasAdminObserver(menuObserver);
     }
+
+    Intent serviceIntent = new Intent(this, NotificationService.class);
+    serviceIntent.setAction(NotificationService.ACTION_START);
+    startService(serviceIntent);
   }
 
   @Override

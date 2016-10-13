@@ -50,6 +50,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.activities.AdminActivity"/>
         </activity>
+
+        <service
+            android:name="com.nicewuerfel.musicbot.NotificationService"
+            android:enabled="true"/>
     </application>
 
 </manifest>

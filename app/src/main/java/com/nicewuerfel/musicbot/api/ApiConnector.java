@@ -1,6 +1,7 @@
 package com.nicewuerfel.musicbot.api;
 
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,9 +10,12 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.nicewuerfel.musicbot.ImageLoadingListener;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -188,25 +192,30 @@ public final class ApiConnector {
     return user.isPresent() && user.get().hasPermission("admin");
   }
 
-  /**
-   * Asynchronously tries to retrieve the album art for the given song and displays it in the given view.
-   *
-   * @param song         the song to load
-   * @param albumArtView the view to display the album art in
-   * @param hideOnFail   whether to set visibility of the view to GONE if no image can be loaded
-   */
-  public static void displayAlbumArt(@NonNull final Song song, @NonNull final ImageView albumArtView, final boolean hideOnFail) {
-    albumArtView.setVisibility(View.VISIBLE);
+  public static void loadAlbumArt(@NonNull Context context, @NonNull final Song song, @NonNull final ImageLoadingListener loadingListener) {
+    if (song.equals(Song.UNKNOWN)) {
+      loadingListener.onLoadingComplete(song, null);
+    }
     final String albumArtUrl = song.getAlbumArtUrl();
     if (albumArtUrl != null) {
       ImageLoader imageLoader = ImageLoader.getInstance();
       if (!imageLoader.isInited()) {
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(albumArtView.getContext())
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
             .memoryCache(images)
             .build();
         imageLoader.init(config);
       }
-      imageLoader.displayImage(albumArtUrl, albumArtView);
+      imageLoader.loadImage(albumArtUrl, new SimpleImageLoadingListener() {
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+          loadingListener.onLoadingComplete(song, loadedImage);
+        }
+
+        @Override
+        public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+          loadingListener.onLoadingComplete(song, null);
+        }
+      });
     } else {
       Bitmap cacheImage = images.get(song.getSongId());
       if (cacheImage == null) {
@@ -218,19 +227,41 @@ public final class ApiConnector {
               if (body != null) {
                 Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
                 images.put(song.getSongId(), bitmap);
-                albumArtView.setImageBitmap(bitmap);
-              } else if (hideOnFail) {
-                albumArtView.setVisibility(View.GONE);
+                loadingListener.onLoadingComplete(song, bitmap);
+                return;
               }
-            } else if (hideOnFail) {
-              albumArtView.setVisibility(View.GONE);
             }
+            loadingListener.onLoadingComplete(song, null);
           }
         });
       } else {
-        albumArtView.setImageBitmap(cacheImage);
+        loadingListener.onLoadingComplete(song, cacheImage);
       }
     }
+  }
+
+  /**
+   * Asynchronously tries to retrieve the album art for the given song and displays it in the given view.
+   *
+   * @param song         the song to load
+   * @param albumArtView the view to display the album art in
+   * @param hideOnFail   whether to set visibility of the view to GONE if no image can be loaded
+   */
+  public static void displayAlbumArt(@NonNull final Song song, @NonNull final ImageView albumArtView, final boolean hideOnFail) {
+    albumArtView.setVisibility(View.VISIBLE);
+    loadAlbumArt(albumArtView.getContext(), song, new ImageLoadingListener() {
+      @Override
+      public void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap) {
+        if (bitmap == null) {
+          if (hideOnFail) {
+            albumArtView.setVisibility(View.GONE);
+          }
+          return;
+        }
+
+        albumArtView.setImageBitmap(bitmap);
+      }
+    });
   }
 }
 

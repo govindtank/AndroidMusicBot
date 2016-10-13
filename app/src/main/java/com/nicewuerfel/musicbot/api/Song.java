@@ -25,6 +25,17 @@ public final class Song implements Parcelable {
 
   private transient boolean isLastPlayed = false;
 
+  private Song() {
+    songId = "";
+    apiName = "";
+    title = "Unknown";
+    description = "Unknown";
+    albumArtUrl = null;
+    stringRep = "Unknown";
+    duration = null;
+    username = null;
+  }
+
   protected Song(Parcel in) {
     songId = in.readString();
     apiName = in.readString();
@@ -144,4 +155,6 @@ public final class Song implements Parcelable {
     parcel.writeString(username);
     parcel.writeByte((byte) (isLastPlayed ? 1 : 0));
   }
+
+  public static final Song UNKNOWN = new Song();
 }
