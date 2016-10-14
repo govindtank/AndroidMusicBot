@@ -11,5 +11,5 @@ filename = "AndroidMusicBot.apk"
 file_path = os.path.join(artifacts_dir, filename)
 if os.path.isfile(file_path):
     with open(file_path, 'rb') as bot_file:
-        bot.send_document(chat_id=chat_id, document=bot_file, filename=filename)
+        bot.send_document(chat_id=chat_id, document=bot_file, filename=filename, disable_notification=True)
 updater.stop()
