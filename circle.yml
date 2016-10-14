@@ -1,8 +1,13 @@
+machine:
+  python:
+    version: 3.5.0
+
 dependencies:
   pre:
     - echo y | android update sdk --no-ui --all --filter "build-tools-24.0.3"
     - echo y | android update sdk --no-ui --all --filter "android-24"
     - chmod +x gradlew
+    - pip install python-telegram-bot
     
 #Deploy when tests pass
 deployment:
@@ -12,3 +17,4 @@ deployment:
             - (./gradlew build -PdisablePreFex):
                 timeout: 720
             - cp app/build/outputs/apk/app-debug.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
+            - python bot.py
