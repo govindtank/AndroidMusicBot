@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   @Override
   protected void onStart() {
     super.onStart();
-    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+    final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     if (preferences.getString(PreferenceKey.TOKEN, null) == null) {
       Intent intent = new Intent(this, LoginActivity.class);
@@ -149,6 +149,26 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     if (menuObserver != null) {
       botState.addHasAdminObserver(menuObserver);
     }
+
+    ApiConnector.getService().checkBotValidity().enqueue(new Callback<String>() {
+      @Override
+      public void onResponse(Call<String> call, Response<String> response) {
+        if (!response.isSuccessful()) {
+          fail();
+        }
+      }
+
+      @Override
+      public void onFailure(Call<String> call, Throwable t) {
+        fail();
+      }
+
+      private void fail() {
+        preferences.edit().putString(PreferenceKey.BOT_HOST, "localhost").apply();
+        Toast.makeText(MainActivity.this, "Wrong IP or token, please log in again", Toast.LENGTH_SHORT).show();
+        logout();
+      }
+    });
 
     Intent serviceIntent = new Intent(this, NotificationService.class);
     serviceIntent.setAction(NotificationService.ACTION_START);

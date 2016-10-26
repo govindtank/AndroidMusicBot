@@ -219,4 +219,12 @@ public interface BotService {
 
   @GET("get_album_art")
   Call<ResponseBody> getAlbumArt(@Query("song_id") String songId);
+
+  /**
+   * Checks whether the bot is running and accepts the current token.
+   *
+   * @return "yes" (call won't be successful otherwise)
+   */
+  @GET("are_you_there")
+  Call<String> checkBotValidity();
 }
