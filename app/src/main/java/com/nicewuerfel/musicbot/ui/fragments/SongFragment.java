@@ -15,6 +15,7 @@ import com.mobeta.android.dslv.DragSortListView;
 import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.AlbumArtLoader;
 import com.nicewuerfel.musicbot.api.ApiConnector;
+import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MoveRequestBody;
 import com.nicewuerfel.musicbot.api.PlayerState;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+
+import id.ridsatrio.optio.Optional;
 
 /**
  * A fragment representing a list of Items.
@@ -277,7 +280,11 @@ public class SongFragment extends Fragment {
       }
 
       View removeView = view.findViewById(R.id.remove_button);
-      if (removable && !isLastPlayed) {
+      Optional<ApiUser> foundUser = ApiConnector.getUser();
+      if (removable
+          && foundUser.isPresent()
+          && (foundUser.get().hasPermission("mod") || foundUser.get().getUsername().equals(song.getUsername()))
+          && !isLastPlayed) {
         removeView.setVisibility(View.VISIBLE);
       } else {
         removeView.setVisibility(View.GONE);

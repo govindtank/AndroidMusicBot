@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     adminObserver = new Observer() {
       @Override
       public void update(Observable observable, Object data) {
-        queueFragment.setRemovable(ApiConnector.isAdmin());
+        queueFragment.setRemovable(true);
         queueFragment.setMovable(ApiConnector.isAdmin());
       }
     };
