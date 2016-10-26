@@ -84,6 +84,12 @@ public class NotificationService extends Service {
     return Service.START_STICKY;
   }
 
+  @Override
+  public void onDestroy() {
+    unregisterObservers();
+    bitmap = null;
+    super.onDestroy();
+  }
 
   private void registerObservers() {
     BotState.getInstance().addPlayerStateObserver(stateObserver);
