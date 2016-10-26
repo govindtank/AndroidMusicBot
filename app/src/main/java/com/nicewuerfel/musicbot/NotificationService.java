@@ -61,6 +61,10 @@ public class NotificationService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    if(intent == null) {
+      System.out.println("null intent");
+      return Service.START_REDELIVER_INTENT;
+    }
     switch (intent.getAction()) {
       case ACTION_START:
         showNotification(BotState.getInstance().getPlayerState());
