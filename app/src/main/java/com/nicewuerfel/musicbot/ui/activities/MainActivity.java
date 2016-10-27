@@ -154,19 +154,16 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
       @Override
       public void onResponse(Call<String> call, Response<String> response) {
         if (!response.isSuccessful()) {
-          fail();
+          Toast.makeText(MainActivity.this, "Wrong token, please log in again", Toast.LENGTH_SHORT).show();
+          logout();
         }
       }
 
       @Override
       public void onFailure(Call<String> call, Throwable t) {
-        fail();
-      }
-
-      private void fail() {
-        preferences.edit().putString(PreferenceKey.BOT_HOST, "localhost").apply();
-        Toast.makeText(MainActivity.this, "Wrong IP or token, please log in again", Toast.LENGTH_SHORT).show();
-        logout();
+        Intent autoDetectIntent = new Intent(MainActivity.this, SettingsActivity.class);
+        autoDetectIntent.putExtra(SettingsActivity.EXTRA_AUTO_DETECT, true);
+        startActivity(autoDetectIntent);
       }
     });
 
