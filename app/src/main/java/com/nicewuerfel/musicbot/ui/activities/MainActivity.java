@@ -360,9 +360,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     @Override
     public void onFailure(Call<PlayerState> call, Throwable t) {
       refreshCall = null;
-      if (!call.isCanceled()) {
-        Toast.makeText(MainActivity.this, getString(R.string.get_queue_failed), Toast.LENGTH_SHORT).show();
-      }
     }
   }
 }
