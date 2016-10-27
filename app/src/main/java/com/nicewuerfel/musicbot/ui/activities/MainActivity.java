@@ -141,10 +141,8 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     }
 
     BotState botState = BotState.getInstance();
-    adminObserver.update(null, null);
     // TODO actually observe isAdmin, not hasAdmin
     botState.addHasAdminObserver(adminObserver);
-    queueObserver.update(null, BotState.getInstance().getPlayerState());
     botState.addPlayerStateObserver(queueObserver);
     if (menuObserver != null) {
       botState.addHasAdminObserver(menuObserver);
@@ -210,7 +208,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
         claimAdminItem.setVisible(!BotState.getInstance().hasAdmin());
       }
     };
-    menuObserver.update(null, null);
     BotState.getInstance().addHasAdminObserver(menuObserver);
     return true;
   }
