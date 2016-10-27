@@ -68,6 +68,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
       if (view != null) {
         Snackbar.make(view, "Press the refresh button to auto-detect the bot IP", Snackbar.LENGTH_INDEFINITE).show();
       }
+    } else {
+      autoDetect();
     }
   }
 
