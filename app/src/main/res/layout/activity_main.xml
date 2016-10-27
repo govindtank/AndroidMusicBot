@@ -55,6 +55,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
+                app:fabBackgroundTint="@android:color/white"
+                app:fabDrawableTint="?attr/colorPrimaryDark"
                 app:fabGravity="bottom_end"
                 app:fabMenu="@menu/fab_menu"
                 app:miniFabBackgroundTint="@android:color/white"
