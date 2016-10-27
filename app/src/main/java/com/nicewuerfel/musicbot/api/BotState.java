@@ -3,7 +3,6 @@ package com.nicewuerfel.musicbot.api;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -141,17 +140,18 @@ public final class BotState {
   }
 
   /**
-   * Add a listener to player state changes. The observer will be called on the UI thread.<br>
-   * Passing null does nothing.
+   * Add a listener to player state changes. The observer will be called on the UI thread.
    *
    * @param observer the observer
    */
-  public void addPlayerStateObserver(@Nullable Observer observer) {
-    observables[Index.PLAYER_STATE.ordinal()].addObserver(observer);
+  public void addPlayerStateObserver(@NonNull Observer observer) {
+    Observable observable = observables[Index.PLAYER_STATE.ordinal()];
+    observable.addObserver(observer);
+    observer.update(observable, getPlayerState());
     scheduleUpdater(Index.PLAYER_STATE, ApiConnector.getService().getPlayerState());
   }
 
-  public synchronized void deletePlayerStateObserver(@Nullable Observer observer) {
+  public synchronized void deletePlayerStateObserver(@NonNull Observer observer) {
     synchronized (futures) {
       Observable observable = observables[Index.PLAYER_STATE.ordinal()];
       observable.deleteObserver(observer);
@@ -162,17 +162,18 @@ public final class BotState {
   }
 
   /**
-   * Add a listener to the hasAdmin field. The observer will be called on the UI thread.<br>
-   * Passing null does nothing.
+   * Add a listener to the hasAdmin field. The observer will be called on the UI thread.
    *
    * @param observer the observer
    */
-  public void addHasAdminObserver(@Nullable Observer observer) {
-    observables[Index.HAS_ADMIN.ordinal()].addObserver(observer);
+  public void addHasAdminObserver(@NonNull Observer observer) {
+    Observable observable = observables[Index.HAS_ADMIN.ordinal()];
+    observable.addObserver(observer);
+    observer.update(observable, hasAdmin);
     scheduleUpdater(Index.HAS_ADMIN, ApiConnector.getService().hasAdmin());
   }
 
-  public void deleteHasAdminObserver(@Nullable Observer observer) {
+  public void deleteHasAdminObserver(@NonNull Observer observer) {
     synchronized (futures) {
       Observable observable = observables[Index.HAS_ADMIN.ordinal()];
       observable.deleteObserver(observer);
@@ -183,17 +184,18 @@ public final class BotState {
   }
 
   /**
-   * Add a listener to the list of available music APIs. The observer will be called on the UI thread.<br>
-   * Passing null does nothing.
+   * Add a listener to the list of available music APIs. The observer will be called on the UI thread.
    *
    * @param observer the observer
    */
-  public void addMusicApisObserver(@Nullable Observer observer) {
-    observables[Index.MUSIC_APIS.ordinal()].addObserver(observer);
+  public void addMusicApisObserver(@NonNull Observer observer) {
+    Observable observable = observables[Index.MUSIC_APIS.ordinal()];
+    observable.addObserver(observer);
+    observer.update(observable, getMusicApis());
     scheduleUpdater(Index.MUSIC_APIS, ApiConnector.getService().getMusicApis());
   }
 
-  public void deleteMusicApisObserver(@Nullable Observer observer) {
+  public void deleteMusicApisObserver(@NonNull Observer observer) {
     synchronized (futures) {
       Observable observable = observables[Index.MUSIC_APIS.ordinal()];
       observable.deleteObserver(observer);
