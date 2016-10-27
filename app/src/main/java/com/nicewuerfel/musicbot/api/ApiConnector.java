@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.nicewuerfel.musicbot.PreferenceKey;
+
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -47,7 +49,7 @@ public final class ApiConnector {
       return null;
     }
 
-    return preferences.getString("bot_token", null);
+    return preferences.getString(PreferenceKey.TOKEN, null);
   }
 
   private static void updateAuth() {
