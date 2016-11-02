@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   private Observer menuObserver;
 
   private Call<PlayerState> refreshCall;
+  private Call<String> validityCall;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +149,8 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
       botState.addHasAdminObserver(menuObserver);
     }
 
-    ApiConnector.getService().checkBotValidity().enqueue(new Callback<String>() {
+    validityCall = ApiConnector.getService().checkBotValidity();
+    validityCall.enqueue(new Callback<String>() {
       @Override
       public void onResponse(Call<String> call, Response<String> response) {
         if (!response.isSuccessful()) {
@@ -159,9 +161,11 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
 
       @Override
       public void onFailure(Call<String> call, Throwable t) {
-        Intent autoDetectIntent = new Intent(MainActivity.this, SettingsActivity.class);
-        autoDetectIntent.putExtra(SettingsActivity.EXTRA_AUTO_DETECT, true);
-        startActivity(autoDetectIntent);
+        if (!call.isCanceled()) {
+          Intent autoDetectIntent = new Intent(MainActivity.this, SettingsActivity.class);
+          autoDetectIntent.putExtra(SettingsActivity.EXTRA_AUTO_DETECT, true);
+          startActivity(autoDetectIntent);
+        }
       }
     });
 
@@ -181,6 +185,10 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     if (refreshCall != null) {
       refreshCall.cancel();
       refreshCall = null;
+    }
+    if (validityCall != null) {
+      validityCall.cancel();
+      validityCall = null;
     }
     BotState botState = BotState.getInstance();
     botState.deletePlayerStateObserver(queueObserver);
