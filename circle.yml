@@ -5,7 +5,7 @@ machine:
 dependencies:
   pre:
     - echo y | android update sdk --no-ui --all --filter "build-tools-24.0.3"
-    - echo y | android update sdk --no-ui --all --filter "android-24"
+    - echo y | android update sdk --no-ui --all --filter "android-25"
     - chmod +x gradlew
     - pip install python-telegram-bot
     
