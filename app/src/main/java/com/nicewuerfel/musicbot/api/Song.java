@@ -28,10 +28,10 @@ public final class Song implements Parcelable {
   private Song() {
     songId = "";
     apiName = "";
-    title = "Unknown";
-    description = "Unknown";
+    title = "";
+    description = "";
     albumArtUrl = null;
-    stringRep = "Unknown";
+    stringRep = "";
     duration = null;
     username = null;
   }
