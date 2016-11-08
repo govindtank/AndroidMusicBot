@@ -17,6 +17,6 @@ deployment:
         commands:
             - (./gradlew build -PdisablePreFex):
                 timeout: 720
-            - export PATH=$PATH:/usr/local/android-sdk-linux/build-tools/24.0.3/ && apksigner sign -ks ciKeystore.jks -ks-pass env:KS_PASS -key-pass env:KEY_PASS app/build/outputs/apk/app-debug.apk
-            - cp app/build/outputs/apk/app-debug.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
+            - export PATH=$PATH:/usr/local/android-sdk-linux/build-tools/24.0.3/ && apksigner sign -ks ciKeystore.jks -ks-pass env:KS_PASS -key-pass env:KEY_PASS app/build/outputs/apk/app-release-unsigned.apk
+            - cp app/build/outputs/apk/app-release-unsigned.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
             - python bot.py
