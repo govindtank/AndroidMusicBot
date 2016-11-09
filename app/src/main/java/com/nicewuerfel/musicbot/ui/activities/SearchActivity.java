@@ -59,6 +59,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
     final ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
     viewPager.setAdapter((searchFragmentAdapter = new SearchFragmentAdapter(getSupportFragmentManager())));
+    viewPager.setPageTransformer(true, new com.ToxicBakery.viewpager.transforms.CubeOutTransformer());
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
       @Override
       public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
