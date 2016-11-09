@@ -139,26 +139,34 @@ public final class BotState {
     }
   }
 
+  private void addObserver(Observer observer, Index index, Object state, Call<?> updateCall) {
+    Observable observable = observables[index.ordinal()];
+    observable.addObserver(observer);
+    observer.update(observable, state);
+    scheduleUpdater(index, updateCall);
+  }
+
+  private void deleteObserver(Observer observer, Index index) {
+    synchronized (futures) {
+      Observable observable = observables[index.ordinal()];
+      observable.deleteObserver(observer);
+      if (observable.countObservers() == 0) {
+        cancelUpdater(index);
+      }
+    }
+  }
+
   /**
    * Add a listener to player state changes. The observer will be called on the UI thread.
    *
    * @param observer the observer
    */
   public void addPlayerStateObserver(@NonNull Observer observer) {
-    Observable observable = observables[Index.PLAYER_STATE.ordinal()];
-    observable.addObserver(observer);
-    observer.update(observable, getPlayerState());
-    scheduleUpdater(Index.PLAYER_STATE, ApiConnector.getService().getPlayerState());
+    addObserver(observer, Index.PLAYER_STATE, getPlayerState(), ApiConnector.getService().getPlayerState());
   }
 
   public synchronized void deletePlayerStateObserver(@NonNull Observer observer) {
-    synchronized (futures) {
-      Observable observable = observables[Index.PLAYER_STATE.ordinal()];
-      observable.deleteObserver(observer);
-      if (observable.countObservers() == 0) {
-        cancelUpdater(Index.PLAYER_STATE);
-      }
-    }
+    deleteObserver(observer, Index.PLAYER_STATE);
   }
 
   /**
@@ -167,20 +175,11 @@ public final class BotState {
    * @param observer the observer
    */
   public void addHasAdminObserver(@NonNull Observer observer) {
-    Observable observable = observables[Index.HAS_ADMIN.ordinal()];
-    observable.addObserver(observer);
-    observer.update(observable, hasAdmin);
-    scheduleUpdater(Index.HAS_ADMIN, ApiConnector.getService().hasAdmin());
+    addObserver(observer, Index.HAS_ADMIN, hasAdmin(), ApiConnector.getService().hasAdmin());
   }
 
   public void deleteHasAdminObserver(@NonNull Observer observer) {
-    synchronized (futures) {
-      Observable observable = observables[Index.HAS_ADMIN.ordinal()];
-      observable.deleteObserver(observer);
-      if (observable.countObservers() == 0) {
-        cancelUpdater(Index.HAS_ADMIN);
-      }
-    }
+    deleteObserver(observer, Index.HAS_ADMIN);
   }
 
   /**
@@ -189,20 +188,11 @@ public final class BotState {
    * @param observer the observer
    */
   public void addMusicApisObserver(@NonNull Observer observer) {
-    Observable observable = observables[Index.MUSIC_APIS.ordinal()];
-    observable.addObserver(observer);
-    observer.update(observable, getMusicApis());
-    scheduleUpdater(Index.MUSIC_APIS, ApiConnector.getService().getMusicApis());
+    addObserver(observer, Index.MUSIC_APIS, getMusicApis(), ApiConnector.getService().getMusicApis());
   }
 
   public void deleteMusicApisObserver(@NonNull Observer observer) {
-    synchronized (futures) {
-      Observable observable = observables[Index.MUSIC_APIS.ordinal()];
-      observable.deleteObserver(observer);
-      if (observable.countObservers() == 0) {
-        cancelUpdater(Index.MUSIC_APIS);
-      }
-    }
+    deleteObserver(observer, Index.MUSIC_APIS);
   }
 
   @NonNull
