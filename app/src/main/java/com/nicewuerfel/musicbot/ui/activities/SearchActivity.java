@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -140,6 +141,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     searchView.setIconifiedByDefault(false);
     searchView.requestFocus();
     searchView.setQueryHint(getString(R.string.search_hint));
+    searchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon).setVisibility(View.GONE);
     searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
       @Override
       public boolean onQueryTextSubmit(String query) {
