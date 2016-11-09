@@ -44,6 +44,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
   private static final String ARG_QUERY = "QUERY";
 
   private String query = "";
+  private Toast currentToast = null;
 
   private SearchFragmentAdapter searchFragmentAdapter;
 
@@ -219,7 +220,10 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
         }
       }
     });
-    finish();
+    if (currentToast != null) {
+      currentToast.cancel();
+    }
+    (currentToast = Toast.makeText(this, getString(R.string.enqueued_song, song.getTitle()), Toast.LENGTH_SHORT)).show();
   }
 
   @Override
