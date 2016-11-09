@@ -91,12 +91,12 @@ public class SearchFragment extends Fragment {
   }
 
   @Override
-  public void onDetach() {
-    super.onDetach();
+  public void onDestroy() {
     if (searchCall != null) {
       searchCall.cancel();
       searchCall = null;
     }
+    super.onDestroy();
   }
 
   public MusicApi getApi() {
