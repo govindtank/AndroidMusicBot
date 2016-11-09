@@ -106,7 +106,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     super.onResume();
     if (query.isEmpty()) {
       InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-      imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+      imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
     }
     refreshSearchResults();
   }
