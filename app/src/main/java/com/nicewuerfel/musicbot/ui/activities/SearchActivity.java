@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.ToxicBakery.viewpager.transforms.RotateUpTransformer;
 import com.nicewuerfel.musicbot.PreferenceKey;
 import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
@@ -59,7 +60,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
     final ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
     viewPager.setAdapter((searchFragmentAdapter = new SearchFragmentAdapter(getSupportFragmentManager())));
-    viewPager.setPageTransformer(true, new com.ToxicBakery.viewpager.transforms.CubeOutTransformer());
+    viewPager.setPageTransformer(true, new RotateUpTransformer());
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
       @Override
       public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
