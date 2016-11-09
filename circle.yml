@@ -12,7 +12,14 @@ dependencies:
     
 #Deploy when tests pass
 deployment:
-    master:
+    build:
+        branch: dev
+        commands:
+            - (./gradlew build -PdisablePreFex):
+                timeout: 720
+            - export PATH=$PATH:/usr/local/android-sdk-linux/build-tools/24.0.3/ && apksigner sign -ks ciKeystore.jks -ks-pass env:KS_PASS -key-pass env:KEY_PASS app/build/outputs/apk/app-release-unsigned.apk
+            - cp app/build/outputs/apk/app-release-unsigned.apk $CIRCLE_ARTIFACTS/AndroidMusicBot.apk
+    buildAndRelease:
         branch: master
         commands:
             - (./gradlew build -PdisablePreFex):
