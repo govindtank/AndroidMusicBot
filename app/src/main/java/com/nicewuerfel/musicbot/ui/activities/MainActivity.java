@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.internal.NavigationMenu;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -14,27 +13,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.nicewuerfel.musicbot.NotificationService;
 import com.nicewuerfel.musicbot.PreferenceKey;
 import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
+import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.DummyCallback;
-import com.nicewuerfel.musicbot.api.MusicApi;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nicewuerfel.musicbot.ui.fragments.PlayerControlFragment;
 import com.nicewuerfel.musicbot.ui.fragments.SongFragment;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import io.github.yavski.fabspeeddial.FabSpeedDial;
-import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
+import id.ridsatrio.optio.Optional;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,35 +54,13 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
-    FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_speed_dial);
-    if (fabSpeedDial != null) {
-      fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
+    View fab = findViewById(R.id.fab);
+    if (fab != null) {
+      fab.setOnClickListener(new View.OnClickListener() {
         @Override
-        public boolean onPrepareMenu(final NavigationMenu navigationMenu) {
-          navigationMenu.clear();
-          List<MusicApi> apis = BotState.getInstance().getMusicApis();
-
-          if (apis.isEmpty()) {
-            MenuItem menu = navigationMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, getString(R.string.no_search_apis));
-            menu.setIcon(android.R.drawable.stat_notify_error);
-          } else {
-            for (int i = 0; i < apis.size(); i++) {
-              MenuItem menu = navigationMenu.add(Menu.NONE, i, Menu.NONE, getString(R.string.menu_item_search, apis.get(i).getPrettyName()));
-              menu.setIcon(android.R.drawable.ic_menu_search);
-            }
-          }
-          return true;
-        }
-
-        @Override
-        public boolean onMenuItemSelected(MenuItem menuItem) {
-          int id = menuItem.getItemId();
-          List<MusicApi> apis = BotState.getInstance().getMusicApis();
-          if (id < apis.size()) {
-            MusicApi api = apis.get(id);
-            showSearchBar(api);
-          }
-          return true;
+        public void onClick(View view) {
+          Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+          startActivity(intent);
         }
       });
     }
@@ -104,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
       actionBar.setDisplayHomeAsUpEnabled(false);
     }
 
-    final SongFragment queueFragment = SongFragment.newInstance(new ArrayList<>(BotState.getInstance().getPlayerState().getQueue()));
+    final SongFragment queueFragment = SongFragment.newInstance(new ArrayList<>(BotState.getInstance().getPlayerState().getQueue()), false, true);
     Fragment playerControlFragment = PlayerControlFragment.newInstance();
 
     getSupportFragmentManager()
@@ -118,8 +94,12 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     adminObserver = new Observer() {
       @Override
       public void update(Observable observable, Object data) {
-        queueFragment.setRemovable(true);
-        queueFragment.setMovable(ApiConnector.isAdmin());
+        Optional<ApiUser> userFound = ApiConnector.getUser();
+        if (userFound.isPresent()) {
+          ApiUser user = userFound.get();
+          queueFragment.setRemovable(user.hasPermission("mod"));
+          queueFragment.setMovable(user.hasPermission("mod"));
+        }
       }
     };
     queueObserver = new Observer() {
@@ -265,12 +245,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
         Toast.makeText(MainActivity.this, getString(R.string.connection_failed), Toast.LENGTH_SHORT).show();
       }
     });
-  }
-
-  private void showSearchBar(MusicApi api) {
-    Intent intent = new Intent(this, SearchActivity.class);
-    intent.putExtra(SearchActivity.ARG_API, api);
-    startActivity(intent);
   }
 
   private void refreshPlayerState(boolean showToast) {

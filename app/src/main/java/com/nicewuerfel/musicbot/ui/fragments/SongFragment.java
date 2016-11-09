@@ -39,6 +39,8 @@ import id.ridsatrio.optio.Optional;
 public class SongFragment extends Fragment {
 
   private static final String ARG_SONG_LIST = "songs";
+  private static final String ARG_MOVABLE = "movable";
+  private static final String ARG_REMOVABLE = "removable";
 
   private ArrayList<Song> songs;
   private ArrayAdapter<Song> songAdapter;
@@ -56,14 +58,16 @@ public class SongFragment extends Fragment {
   public SongFragment() {
   }
 
-  public static SongFragment newInstance() {
-    return newInstance(new ArrayList<Song>(64));
+  public static SongFragment newInstance(boolean movable, boolean removable) {
+    return newInstance(new ArrayList<Song>(64), movable, removable);
   }
 
-  public static SongFragment newInstance(ArrayList<Song> songs) {
+  public static SongFragment newInstance(ArrayList<Song> songs, boolean movable, boolean removable) {
     SongFragment fragment = new SongFragment();
     Bundle args = new Bundle();
     args.putParcelableArrayList(ARG_SONG_LIST, songs);
+    args.putBoolean(ARG_MOVABLE, movable);
+    args.putBoolean(ARG_REMOVABLE, removable);
     fragment.setArguments(args);
     return fragment;
   }
@@ -88,8 +92,12 @@ public class SongFragment extends Fragment {
     views = Collections.newSetFromMap(new WeakHashMap<View, Boolean>(128));
     if (savedInstanceState != null) {
       songs = savedInstanceState.getParcelableArrayList(ARG_SONG_LIST);
+      movable = savedInstanceState.getBoolean(ARG_MOVABLE);
+      removable = savedInstanceState.getBoolean(ARG_REMOVABLE);
     } else if (getArguments() != null) {
       songs = getArguments().getParcelableArrayList(ARG_SONG_LIST);
+      movable = getArguments().getBoolean(ARG_MOVABLE);
+      removable = getArguments().getBoolean(ARG_REMOVABLE);
     } else {
       songs = new ArrayList<>(64);
     }

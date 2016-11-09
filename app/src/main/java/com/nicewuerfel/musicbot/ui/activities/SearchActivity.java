@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -14,39 +17,33 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import com.nicewuerfel.musicbot.PreferenceKey;
 import com.nicewuerfel.musicbot.R;
 import com.nicewuerfel.musicbot.api.ApiConnector;
+import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MusicApi;
 import com.nicewuerfel.musicbot.api.Song;
-import com.nicewuerfel.musicbot.ui.fragments.ConnectionErrorFragment;
-import com.nicewuerfel.musicbot.ui.fragments.LoadingFragment;
+import com.nicewuerfel.musicbot.ui.fragments.SearchFragment;
 import com.nicewuerfel.musicbot.ui.fragments.SongFragment;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Map;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SearchActivity extends AppCompatActivity implements SongFragment.OnListFragmentInteractionListener {
 
-  public static final String ARG_API = "API";
   private static final String ARG_QUERY = "QUERY";
 
-  private MusicApi api;
   private String query = "";
 
-  @Nullable
-  private Call<List<Song>> searchCall;
-  private SongFragment songFragment;
-
+  private SearchFragmentAdapter searchFragmentAdapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +57,22 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
       actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    songFragment = SongFragment.newInstance();
-    getSupportFragmentManager()
-        .beginTransaction()
-        .replace(R.id.activity_content, songFragment)
-        .commit();
-    getSupportFragmentManager().executePendingTransactions();
-    songFragment.setMovable(false);
-    songFragment.setRemovable(false);
+    final ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+    viewPager.setAdapter((searchFragmentAdapter = new SearchFragmentAdapter(getSupportFragmentManager())));
+    viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+      @Override
+      public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+      }
+
+      @Override
+      public void onPageSelected(int position) {
+        refreshSearchResults();
+      }
+
+      @Override
+      public void onPageScrollStateChanged(int state) {
+      }
+    });
   }
 
   @Override
@@ -79,9 +84,8 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
       startActivity(intent);
     }
 
-    api = getIntent().getParcelableExtra(ARG_API);
-    if (api == null) {
-      Logger.getAnonymousLogger().warning("Missing API extra in search activity. Finishing..."); // TODO use real logger
+    if (BotState.getInstance().getMusicApis().isEmpty()) {
+      Toast.makeText(this, getString(R.string.no_search_apis), Toast.LENGTH_SHORT).show();
       finish();
     }
   }
@@ -115,19 +119,13 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
   @Override
   protected void onStop() {
-    if (searchCall != null) {
-      searchCall.cancel();
-      searchCall = null;
-    }
     super.onStop();
   }
 
   @Override
   protected void onDestroy() {
-    searchCall = null;
-    songFragment = null;
-    api = null;
     query = "";
+    searchFragmentAdapter = null;
     super.onDestroy();
   }
 
@@ -139,7 +137,7 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     SearchView searchView = (SearchView) menuItem.getActionView();
     searchView.setIconifiedByDefault(false);
     searchView.requestFocus();
-    searchView.setQueryHint(getString(R.string.search_hint, api.getPrettyName()));
+    searchView.setQueryHint(getString(R.string.search_hint));
     searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
       @Override
       public boolean onQueryTextSubmit(String query) {
@@ -179,33 +177,25 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     }
   }
 
-  private void refreshSearchResults() {
-    if (searchCall != null) {
-      searchCall.cancel();
-      searchCall = null;
+  @Nullable
+  private SearchFragment getCurrentFragment() {
+    SearchFragmentAdapter searchFragmentAdapter = this.searchFragmentAdapter;
+    if (searchFragmentAdapter == null) {
+      return null;
     }
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.activity_content, LoadingFragment.newInstance())
-        .commit();
-    getSupportFragmentManager().executePendingTransactions();
-    String query = this.query;
-    if (query.isEmpty()) {
-      if (api.isSongProvider()) {
-        searchCall = ApiConnector.getService().getSuggestions(api.getName());
-      } else {
-        onSongsUpdate(Collections.<Song>emptyList());
-        return;
-      }
-    } else {
-      searchCall = ApiConnector.getService().searchSong(api.getName(), query);
-    }
-    if (searchCall != null) {
-      searchCall.enqueue(new SearchResultCallback(query));
-    }
+    ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+    return (SearchFragment) searchFragmentAdapter.getItem(viewPager.getCurrentItem());
   }
 
-  public boolean isRefreshing() {
-    return searchCall != null;
+  private void refreshSearchResults() {
+    String query = this.query;
+
+    SearchFragment searchFragment = getCurrentFragment();
+    if (searchFragment == null) {
+      return;
+    }
+
+    searchFragment.search(query);
   }
 
   void logout() {
@@ -230,65 +220,37 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
 
   @Override
   public void onSongRemoveClick(Song song) {
-    // Not possible
+    // never happens, ignore
+  }
+}
+
+class SearchFragmentAdapter extends FragmentPagerAdapter {
+  private Map<MusicApi, Fragment> apis = new HashMap<>();
+
+  SearchFragmentAdapter(FragmentManager fragmentManager) {
+    super(fragmentManager);
   }
 
-  private void onSongsUpdate(@NonNull List<Song> songs) {
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.activity_content, songFragment)
-        .commit();
-    getSupportFragmentManager().executePendingTransactions();
-    songFragment.updateQueue(songs);
+  @Override
+  public Fragment getItem(int position) {
+    List<MusicApi> musicApis = BotState.getInstance().getMusicApis();
+    MusicApi api = musicApis.get(position);
+
+    Fragment result = apis.get(api);
+    if (result == null) {
+      apis.put(api, (result = SearchFragment.newInstance(api)));
+    }
+
+    return result;
   }
 
-  private class SearchResultCallback implements Callback<List<Song>> {
+  @Override
+  public int getCount() {
+    return BotState.getInstance().getMusicApis().size();
+  }
 
-    private final String query;
-
-    private SearchResultCallback(String query) {
-      this.query = query;
-    }
-
-    @Override
-    public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
-      if (SearchActivity.this.query.equals(query)) {
-        if (response.isSuccessful()) {
-          List<Song> songs = response.body();
-          if (songs == null) {
-            songs = Collections.emptyList();
-          }
-          onSongsUpdate(songs);
-        } else {
-          showError();
-        }
-
-        searchCall = null;
-      }
-    }
-
-    @Override
-    public void onFailure(Call<List<Song>> call, Throwable t) {
-      if (!call.isCanceled() && SearchActivity.this.query.equals(query)) {
-        showError();
-        searchCall = null;
-      }
-    }
-
-    private void showError() {
-      ConnectionErrorFragment errorFragment = ConnectionErrorFragment.newInstance();
-      getSupportFragmentManager().beginTransaction()
-          .replace(R.id.activity_content, errorFragment)
-          .commit();
-      getSupportFragmentManager().executePendingTransactions();
-      View view = errorFragment.getView();
-      if (view != null) {
-        view.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            refreshSearchResults();
-          }
-        });
-      }
-    }
+  @Override
+  public CharSequence getPageTitle(int position) {
+    return BotState.getInstance().getMusicApis().get(position).getPrettyName();
   }
 }

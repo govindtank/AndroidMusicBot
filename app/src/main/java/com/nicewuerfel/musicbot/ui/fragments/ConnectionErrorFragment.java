@@ -10,9 +10,6 @@ import android.view.ViewGroup;
 
 import com.nicewuerfel.musicbot.R;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,15 +31,6 @@ public class ConnectionErrorFragment extends Fragment {
   @NonNull
   public static ConnectionErrorFragment newInstance() {
     return new ConnectionErrorFragment();
-  }
-
-  @NonNull
-  public static ConnectionErrorFragment newInstance(Call<?> call, Callback<?> callback) {
-    ConnectionErrorFragment fragment = new ConnectionErrorFragment();
-    Bundle args = new Bundle();
-    //args.putParcelableArrayList(ARG_SONG_LIST, songs);
-    fragment.setArguments(args);
-    return fragment;
   }
 
   @Override
