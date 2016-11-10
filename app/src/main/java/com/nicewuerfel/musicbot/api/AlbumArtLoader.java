@@ -9,19 +9,7 @@ import android.support.annotation.UiThread;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
-import net.jcip.annotations.ThreadSafe;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import com.squareup.picasso.LruCache;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -31,49 +19,24 @@ public final class AlbumArtLoader {
   private static AlbumArtLoader instance = null;
 
   @NonNull
-  private final LruMemoryCache images;
-  @NonNull
-  private final ImageLoader imageLoader;
-  @NonNull
-  private final Map<Song, MultiCallback> callbacks;
+  private final LruCache images;
 
-  private AlbumArtLoader(@NonNull Context context) {
-    images = new LruMemoryCache((int) (Runtime.getRuntime().maxMemory() * (15 / 100f)));
-    imageLoader = ImageLoader.getInstance();
-    if (!imageLoader.isInited()) {
-      ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
-          .memoryCache(images)
-          .build();
-      imageLoader.init(config);
-    }
-    callbacks = new HashMap<>(64);
+  private AlbumArtLoader() {
+    images = new LruCache((int) (Runtime.getRuntime().maxMemory() * (8 / 100f)));
   }
 
-  private static synchronized void createInstance(@NonNull Context context) {
+  private static synchronized void createInstance() {
     if (instance == null) {
-      instance = new AlbumArtLoader(context);
+      instance = new AlbumArtLoader();
     }
   }
 
   @NonNull
-  public static AlbumArtLoader getInstance(@NonNull Context context) {
+  public static AlbumArtLoader getInstance() {
     if (instance == null) {
-      createInstance(context);
+      createInstance();
     }
     return instance;
-  }
-
-  private com.nostra13.universalimageloader.core.listener.ImageLoadingListener addListener(@NonNull Song song, @NonNull ImageLoadingListener loadingListener) {
-    synchronized (callbacks) {
-      MultiCallback multiCallback = callbacks.get(song);
-      if (multiCallback == null) {
-        multiCallback = new MultiCallback(song);
-        callbacks.put(song, multiCallback);
-      }
-
-      multiCallback.addListener(loadingListener);
-      return multiCallback;
-    }
   }
 
   @UiThread
@@ -84,7 +47,7 @@ public final class AlbumArtLoader {
 
     final String albumArtUrl = song.getAlbumArtUrl();
     if (albumArtUrl != null) {
-      imageLoader.loadImage(albumArtUrl, addListener(song, loadingListener));
+      throw new IllegalArgumentException("song has an URL");
     } else {
       Bitmap cacheImage = images.get(song.getSongId());
       if (cacheImage != null) {
@@ -92,18 +55,26 @@ public final class AlbumArtLoader {
         return;
       }
 
-      ApiConnector.getService().getAlbumArt(song.getSongId()).enqueue(new DummyCallback<ResponseBody>() {
+      ApiConnector.getService().getAlbumArt(song.getSongId()).enqueue(new retrofit2.Callback<ResponseBody>() {
         @Override
         public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
-          if (response.isSuccessful()) {
-            ResponseBody body = response.body();
-            if (body != null) {
-              Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
-              images.put(song.getSongId(), bitmap);
-              loadingListener.onLoadingComplete(song, bitmap);
-              return;
-            }
+          if (!response.isSuccessful()) {
+            fail();
           }
+          ResponseBody body = response.body();
+          if (body != null) {
+            Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+            images.set(song.getSongId(), bitmap);
+            loadingListener.onLoadingComplete(song, bitmap);
+          }
+        }
+
+        @Override
+        public void onFailure(Call<ResponseBody> call, Throwable t) {
+          fail();
+        }
+
+        private void fail() {
           loadingListener.onLoadingComplete(song, null);
         }
       });
@@ -137,42 +108,5 @@ public final class AlbumArtLoader {
 
   public interface ImageLoadingListener {
     void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap);
-  }
-
-  @ThreadSafe
-  private class MultiCallback extends SimpleImageLoadingListener {
-
-    @NonNull
-    private final Song song;
-    @NonNull
-    private final Set<ImageLoadingListener> listeners;
-
-    private MultiCallback(@NonNull Song song) {
-      this.song = song;
-      listeners = Collections.newSetFromMap(new ConcurrentHashMap<ImageLoadingListener, Boolean>(8));
-    }
-
-    private void addListener(@NonNull ImageLoadingListener loadingListener) {
-      listeners.add(loadingListener);
-    }
-
-    private void onResult(@Nullable Bitmap bitmap) {
-      synchronized (callbacks) {
-        callbacks.remove(song);
-        for (ImageLoadingListener listener : listeners) {
-          listener.onLoadingComplete(song, bitmap);
-        }
-      }
-    }
-
-    @Override
-    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-      onResult(loadedImage);
-    }
-
-    @Override
-    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-      onResult(null);
-    }
   }
 }

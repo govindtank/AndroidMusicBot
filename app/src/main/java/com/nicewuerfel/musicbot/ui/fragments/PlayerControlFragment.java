@@ -21,6 +21,7 @@ import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nicewuerfel.musicbot.ui.activities.LoginActivity;
+import com.squareup.picasso.Picasso;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -176,7 +177,12 @@ public class PlayerControlFragment extends Fragment {
 
       if (!state.getCurrentSong().equals(this.song)) {
         songAlbumArt.setVisibility(View.GONE);
-        AlbumArtLoader.getInstance(getContext()).display(song, songAlbumArt, true);
+        String albumArtUrl = song.getAlbumArtUrl();
+        if (albumArtUrl == null) {
+          AlbumArtLoader.getInstance().display(song, songAlbumArt, true);
+        } else {
+          Picasso.with(getContext()).load(albumArtUrl).into(songAlbumArt);
+        }
       }
     }
 

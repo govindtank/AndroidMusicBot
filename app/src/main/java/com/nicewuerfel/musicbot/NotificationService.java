@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nicewuerfel.musicbot.ui.activities.MainActivity;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -111,18 +114,41 @@ public class NotificationService extends Service {
       showNotification(state, bitmap);
     } else {
       showNotification(state, null);
-      AlbumArtLoader.getInstance(this).load(state.getCurrentSong(), new AlbumArtLoader.ImageLoadingListener() {
-        @Override
-        public void onLoadingComplete(@NonNull Song song, @Nullable Bitmap bitmap) {
-          if (bitmap == null) {
-            return;
+      final Song song = state.getCurrentSong();
+      String albumArtUrl = song.getAlbumArtUrl();
+
+      if (albumArtUrl == null) {
+        AlbumArtLoader.getInstance().load(state.getCurrentSong(), new AlbumArtLoader.ImageLoadingListener() {
+          @Override
+          public void onLoadingComplete(@NonNull Song loadedSong, @Nullable Bitmap bitmap) {
+            if (bitmap == null) {
+              return;
+            }
+            PlayerState currentState = BotState.getInstance().getPlayerState();
+            if (loadedSong.equals(currentState.getCurrentSong())) {
+              showNotification(currentState, bitmap);
+            }
           }
-          PlayerState currentState = BotState.getInstance().getPlayerState();
-          if (song.equals(currentState.getCurrentSong())) {
-            showNotification(currentState, bitmap);
+        });
+      } else {
+        Picasso.with(this).load(albumArtUrl).into(new Target() {
+          @Override
+          public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            PlayerState currentState = BotState.getInstance().getPlayerState();
+            if (song.equals(currentState.getCurrentSong())) {
+              showNotification(currentState, bitmap);
+            }
           }
-        }
-      });
+
+          @Override
+          public void onBitmapFailed(Drawable errorDrawable) {
+          }
+
+          @Override
+          public void onPrepareLoad(Drawable placeHolderDrawable) {
+          }
+        });
+      }
     }
   }
 

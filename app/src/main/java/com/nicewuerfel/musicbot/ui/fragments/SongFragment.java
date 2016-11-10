@@ -2,6 +2,7 @@ package com.nicewuerfel.musicbot.ui.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +21,11 @@ import com.nicewuerfel.musicbot.api.DummyCallback;
 import com.nicewuerfel.musicbot.api.MoveRequestBody;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -44,7 +45,6 @@ public class SongFragment extends Fragment {
 
   private ArrayList<Song> songs;
   private ArrayAdapter<Song> songAdapter;
-  private Map<View, Song> viewSongs;
   private Set<View> views;
   private boolean movable = true;
   private boolean removable = true;
@@ -88,7 +88,6 @@ public class SongFragment extends Fragment {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    viewSongs = new WeakHashMap<>(128);
     views = Collections.newSetFromMap(new WeakHashMap<View, Boolean>(128));
     if (savedInstanceState != null) {
       songs = savedInstanceState.getParcelableArrayList(ARG_SONG_LIST);
@@ -162,7 +161,6 @@ public class SongFragment extends Fragment {
   public void onDestroy() {
     songAdapter = null;
     songs = null;
-    viewSongs = null;
     views = null;
     super.onDestroy();
   }
@@ -235,23 +233,17 @@ public class SongFragment extends Fragment {
       super(SongFragment.this.getContext(), R.layout.fragment_song, songArrayList);
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
       View view;
       final Song song = getItem(position);
       if (convertView instanceof FrameLayout) {
         view = convertView;
-        if (song.equals(viewSongs.get(view))) {
-          return view;
-        } else {
-          viewSongs.put(view, song);
-          views.add(view);
-        }
       } else {
         view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_song, null);
-        viewSongs.put(view, song);
-        views.add(view);
       }
+      views.add(view);
 
       boolean isLastPlayed = song.isLastPlayed();
       if (isLastPlayed) {
@@ -269,8 +261,16 @@ public class SongFragment extends Fragment {
       });
 
       final ImageView albumView = (ImageView) view.findViewById(R.id.album_art);
-      albumView.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-      AlbumArtLoader.getInstance(getContext()).display(song, albumView, false);
+      String albumArtUrl = song.getAlbumArtUrl();
+      if (albumArtUrl == null) {
+        AlbumArtLoader.getInstance().display(song, albumView, false);
+      } else {
+        Picasso.with(getContext())
+            .load(song.getAlbumArtUrl())
+            .placeholder(R.drawable.ic_sync_black_24dp)
+            .error(android.R.drawable.ic_menu_close_clear_cancel)
+            .into(albumView);
+      }
 
       TextView titleText = (TextView) view.findViewById(R.id.song_title);
       titleText.setText(song.getTitle());
