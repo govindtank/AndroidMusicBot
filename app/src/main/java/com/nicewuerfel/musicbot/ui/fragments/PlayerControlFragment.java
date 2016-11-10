@@ -180,6 +180,7 @@ public class PlayerControlFragment extends Fragment {
         if (albumArtUrl == null) {
           AlbumArtLoader.getInstance().display(song, songAlbumArt, true);
         } else {
+          songAlbumArt.setVisibility(View.VISIBLE);
           Picasso.with(getContext()).load(albumArtUrl).into(songAlbumArt);
         }
       }
