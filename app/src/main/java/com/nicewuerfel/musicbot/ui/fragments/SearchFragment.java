@@ -110,15 +110,15 @@ public class SearchFragment extends Fragment {
 
     View view = getView();
     if (view != null) {
-      getChildFragmentManager().beginTransaction()
-          .replace(R.id.fragment_content, LoadingFragment.newInstance())
-          .commit();
-      getChildFragmentManager().executePendingTransactions();
-
       if (searchCall != null) {
         searchCall.cancel();
         searchCall = null;
       }
+
+      getChildFragmentManager().beginTransaction()
+          .replace(R.id.fragment_content, LoadingFragment.newInstance())
+          .commit();
+      getChildFragmentManager().executePendingTransactions();
 
       Call<List<Song>> call;
       if (query.trim().isEmpty()) {
