@@ -176,7 +176,6 @@ public class PlayerControlFragment extends Fragment {
       songDurationText.setText(song.getDuration());
 
       if (!state.getCurrentSong().equals(this.song)) {
-        songAlbumArt.setVisibility(View.GONE);
         String albumArtUrl = song.getAlbumArtUrl();
         if (albumArtUrl == null) {
           AlbumArtLoader.getInstance().display(song, songAlbumArt, true);
