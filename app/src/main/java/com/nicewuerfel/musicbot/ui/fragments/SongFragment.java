@@ -291,7 +291,7 @@ public class SongFragment extends Fragment {
       Optional<ApiUser> foundUser = ApiConnector.getUser();
       if (removable
           && foundUser.isPresent()
-          && (foundUser.get().hasPermission("mod") || foundUser.get().getUsername().equals(song.getUsername()))
+          && (foundUser.get().hasPermission("queue_remove") || foundUser.get().getUsername().equals(song.getUsername()))
           && !isLastPlayed) {
         removeView.setVisibility(View.VISIBLE);
       } else {
