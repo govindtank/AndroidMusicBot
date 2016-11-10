@@ -1,6 +1,5 @@
 package com.nicewuerfel.musicbot.ui.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.ToxicBakery.viewpager.transforms.RotateUpTransformer;
@@ -107,10 +105,6 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
   @Override
   protected void onResume() {
     super.onResume();
-    if (query.isEmpty()) {
-      InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-      imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
-    }
     refreshSearchResults();
   }
 
@@ -141,7 +135,6 @@ public class SearchActivity extends AppCompatActivity implements SongFragment.On
     final MenuItem menuItem = menu.findItem(R.id.search_bar);
     SearchView searchView = (SearchView) menuItem.getActionView();
     searchView.setIconifiedByDefault(false);
-    searchView.requestFocus();
     searchView.setQueryHint(getString(R.string.search_hint));
     View magView = searchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon);
     ((ViewGroup) magView.getParent()).removeView(magView);
