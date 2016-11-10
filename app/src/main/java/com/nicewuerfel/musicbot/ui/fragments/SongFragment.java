@@ -24,10 +24,7 @@ import com.nicewuerfel.musicbot.api.Song;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import id.ridsatrio.optio.Optional;
 
@@ -45,7 +42,6 @@ public class SongFragment extends Fragment {
 
   private ArrayList<Song> songs;
   private ArrayAdapter<Song> songAdapter;
-  private Set<View> views;
   private boolean movable = true;
   private boolean removable = true;
 
@@ -88,7 +84,6 @@ public class SongFragment extends Fragment {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    views = Collections.newSetFromMap(new WeakHashMap<View, Boolean>(128));
     if (savedInstanceState != null) {
       songs = savedInstanceState.getParcelableArrayList(ARG_SONG_LIST);
       movable = savedInstanceState.getBoolean(ARG_MOVABLE);
@@ -161,7 +156,6 @@ public class SongFragment extends Fragment {
   public void onDestroy() {
     songAdapter = null;
     songs = null;
-    views = null;
     super.onDestroy();
   }
 
@@ -179,37 +173,6 @@ public class SongFragment extends Fragment {
       songAdapter.setNotifyOnChange(false);
     }
     selectFirstQueued();
-  }
-
-  private void updateViews() {
-    for (View view : views) {
-      View moveView = view.findViewById(R.id.drag_handle);
-      if (movable) {
-        moveView.setVisibility(View.VISIBLE);
-      } else {
-        moveView.setVisibility(View.GONE);
-      }
-      View removeView = view.findViewById(R.id.remove_button);
-      if (removable) {
-        removeView.setVisibility(View.VISIBLE);
-      } else {
-        removeView.setVisibility(View.GONE);
-      }
-    }
-  }
-
-  public void setMovable(boolean movable) {
-    if (movable != this.movable) {
-      this.movable = movable;
-      updateViews();
-    }
-  }
-
-  public void setRemovable(boolean removable) {
-    if (removable != this.removable) {
-      this.removable = removable;
-      updateViews();
-    }
   }
 
   /**
@@ -243,7 +206,6 @@ public class SongFragment extends Fragment {
       } else {
         view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_song, null);
       }
-      views.add(view);
 
       boolean isLastPlayed = song.isLastPlayed();
       if (isLastPlayed) {
@@ -289,9 +251,8 @@ public class SongFragment extends Fragment {
 
       View removeView = view.findViewById(R.id.remove_button);
       Optional<ApiUser> foundUser = ApiConnector.getUser();
-      if (removable
-          && foundUser.isPresent()
-          && (foundUser.get().hasPermission("queue_remove") || foundUser.get().getUsername().equals(song.getUsername()))
+      if ((removable
+          || (foundUser.isPresent() && foundUser.get().getUsername().equals(song.getUsername())))
           && !isLastPlayed) {
         removeView.setVisibility(View.VISIBLE);
       } else {

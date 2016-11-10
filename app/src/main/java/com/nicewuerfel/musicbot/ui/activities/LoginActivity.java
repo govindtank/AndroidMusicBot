@@ -3,6 +3,7 @@ package com.nicewuerfel.musicbot.ui.activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -40,7 +41,6 @@ import retrofit2.Response;
  * A login screen that offers login via username/password.
  */
 public class LoginActivity extends AppCompatActivity {
-
   /**
    * Keep track of the login task to ensure we can cancel it if requested.
    */
@@ -119,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
     super.onStart();
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     if (prefs.getString("bot_token", null) != null) {
+      setResult(Activity.RESULT_CANCELED);
       finish();
     }
     if (prefs.getString(PreferenceKey.BOT_HOST, "localhost").trim().equals("localhost")) {
@@ -305,6 +306,7 @@ public class LoginActivity extends AppCompatActivity {
 
       switch (result) {
         case SUCCESS:
+          setResult(Activity.RESULT_OK);
           finish();
           return;
         case USER_EXISTS:

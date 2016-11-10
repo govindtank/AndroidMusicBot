@@ -1,5 +1,6 @@
 package com.nicewuerfel.musicbot.ui.activities;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,7 +43,6 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements SongFragment.OnListFragmentInteractionListener, PlayerControlFragment.OnListFragmentInteractionListener {
 
   private Observer queueObserver;
-  private Observer adminObserver;
   private Observer menuObserver;
 
   private Call<PlayerState> refreshCall;
@@ -82,7 +82,11 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
       actionBar.setDisplayHomeAsUpEnabled(false);
     }
 
-    final SongFragment queueFragment = SongFragment.newInstance(new ArrayList<>(BotState.getInstance().getPlayerState().getQueue()), false, true);
+
+    Optional<ApiUser> userFound = ApiConnector.getUser();
+    boolean movable = userFound.isPresent() && userFound.get().hasPermission("mod");
+    boolean removable = userFound.isPresent() && userFound.get().hasPermission("queue_remove");
+    final SongFragment queueFragment = SongFragment.newInstance(new ArrayList<>(BotState.getInstance().getPlayerState().getQueue()), movable, removable);
     Fragment playerControlFragment = PlayerControlFragment.newInstance();
 
     getSupportFragmentManager()
@@ -93,17 +97,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
 
     getSupportFragmentManager().executePendingTransactions();
 
-    adminObserver = new Observer() {
-      @Override
-      public void update(Observable observable, Object data) {
-        Optional<ApiUser> userFound = ApiConnector.getUser();
-        if (userFound.isPresent()) {
-          ApiUser user = userFound.get();
-          queueFragment.setRemovable(user.hasPermission("mod"));
-          queueFragment.setMovable(user.hasPermission("mod"));
-        }
-      }
-    };
     queueObserver = new Observer() {
       @Override
       public void update(Observable observable, Object data) {
@@ -124,8 +117,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     }
 
     BotState botState = BotState.getInstance();
-    // TODO actually observe isAdmin, not hasAdmin
-    botState.addHasAdminObserver(adminObserver);
     botState.addPlayerStateObserver(queueObserver);
     if (menuObserver != null) {
       botState.addHasAdminObserver(menuObserver);
@@ -174,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
     }
     BotState botState = BotState.getInstance();
     botState.deletePlayerStateObserver(queueObserver);
-    botState.deleteHasAdminObserver(adminObserver);
     botState.deleteHasAdminObserver(menuObserver);
     super.onStop();
   }
@@ -182,7 +172,6 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   @Override
   protected void onDestroy() {
     queueObserver = null;
-    adminObserver = null;
     menuObserver = null;
     super.onDestroy();
   }
@@ -237,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
               .putString(PreferenceKey.TOKEN, response.body())
               .apply();
           Toast.makeText(MainActivity.this, getString(R.string.claim_admin_success), Toast.LENGTH_SHORT).show();
+          finish();
+          startActivity(getIntent());
         } else {
           Toast.makeText(MainActivity.this, getString(R.string.claim_admin_not_allowed) + " " + response.code(), Toast.LENGTH_SHORT).show();
         }
@@ -273,7 +264,19 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
   void logout() {
     PreferenceManager.getDefaultSharedPreferences(this).edit().remove(PreferenceKey.TOKEN).apply();
     Intent loginIntent = new Intent(this, LoginActivity.class);
-    startActivity(loginIntent);
+    startActivityForResult(loginIntent, 42);
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == 42) {
+      if (resultCode == Activity.RESULT_OK) {
+        finish();
+        startActivity(getIntent());
+      }
+    } else {
+      super.onActivityResult(requestCode, resultCode, data);
+    }
   }
 
   @Override
