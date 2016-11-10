@@ -23,12 +23,14 @@ import com.nicewuerfel.musicbot.api.ApiConnector;
 import com.nicewuerfel.musicbot.api.ApiUser;
 import com.nicewuerfel.musicbot.api.BotState;
 import com.nicewuerfel.musicbot.api.DummyCallback;
+import com.nicewuerfel.musicbot.api.MoveRequestBody;
 import com.nicewuerfel.musicbot.api.PlayerState;
 import com.nicewuerfel.musicbot.api.Song;
 import com.nicewuerfel.musicbot.ui.fragments.PlayerControlFragment;
 import com.nicewuerfel.musicbot.ui.fragments.SongFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -305,6 +307,27 @@ public class MainActivity extends AppCompatActivity implements SongFragment.OnLi
           })
           .setNegativeButton(android.R.string.no, null)
           .show();
+    } else {
+      Optional<ApiUser> user = ApiConnector.getUser();
+      if (user.isPresent() && user.get().hasPermission("mod")) {
+        List<Song> queue = BotState.getInstance().getPlayerState().getQueue();
+        if (queue.size() < 2 || queue.get(0).equals(song)) return;
+        new AlertDialog.Builder(this)
+            .setCancelable(true)
+            .setTitle(getString(R.string.queue_top, song.getTitle()))
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialogInterface, int i) {
+                List<Song> queue = BotState.getInstance().getPlayerState().getQueue();
+                if (queue.size() > 1) {
+                  Song firstSong = queue.get(0);
+                  ApiConnector.getService().moveSong(new MoveRequestBody(song, firstSong), null).enqueue(new DummyCallback<PlayerState>());
+                }
+              }
+            })
+            .setNegativeButton(android.R.string.no, null)
+            .show();
+      }
     }
   }
 
